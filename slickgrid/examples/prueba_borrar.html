@@ -1,0 +1,95 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <title>SlickGrid example 1: Basic grid</title>
+  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
+  <link rel="stylesheet" href="../css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css"/>
+  <link rel="stylesheet" href="examples.css" type="text/css"/>
+</head>
+<body>
+
+<div id="myGrid" style="width:600px;height:500px;"></div>
+
+<script src="../lib/firebugx.js"></script>
+
+<script src="../lib/jquery-1.7.min.js"></script>
+<script src="../lib/jquery-ui-1.8.16.custom.min.js"></script>
+<script src="../lib/jquery.event.drag-2.0.min.js"></script>
+
+<script src="../slick.core.js"></script>
+<script src="../plugins/slick.cellrangedecorator.js"></script>
+<script src="../plugins/slick.cellrangeselector.js"></script>
+<script src="../plugins/slick.cellselectionmodel.js"></script>
+<script src="../plugins/slick.rowselectionmodel.js"></script>
+<script src="../plugins/slick.rowmovemanager.js"></script>
+<script src="../slick.formatters.js"></script>
+<script src="../slick.editors.js"></script>
+<script src="../slick.grid.js"></script>
+
+<script>
+
+var columns = [
+	{id: "title", name: "Title", field: "title", editor: Slick.Editors.Text},
+	{id: "description", name: "Description", field: "description", editor: Slick.Editors.LongText},
+	{id: "%", name: "% Complete", field: "percentComplete"},
+	{id: "status", name: "Status", field: "status"},
+	{id: "start", name: "Start", field: "start"},
+	{id: "finish", name: "Finish", field: "finish"}
+];
+
+var options = {
+	editable: true,
+	autoEdit: false,
+	enableAddRow: true,
+	forceFitColumns: true,
+	enableCellNavigation: true,
+	enableColumnReorder: true
+};
+
+var data = [{
+	title: "Task 1",
+	description: "Task 1 description",
+	percentComplete: 80,
+	start: "01/01/2009",
+	finish: "01/05/2009",
+	status: "On Hold"
+}, {
+	title: "Task 2",
+	description: "Task 2 description",
+	percentComplete: 60,
+	start: "01/01/2009",
+	finish: "01/05/2009",
+	status: "In Progress"
+}];
+
+var grid = new Slick.Grid("#myGrid", data, columns, options);
+
+//grid.setSelectionModel(new Slick.RowSelectionModel());
+
+data.push({
+	title: "Task 3",
+	description: "2 days",
+	percentComplete: 20,
+	start: "01/01/2009",
+	finish: "04/05/2009",
+	status: "In Progress"
+});
+
+grid.onAddNewRow.subscribe(function (e, args) {
+	var item = {status: "To Do"};
+	$.extend(item, args.item);
+	data.push(item);
+	grid.invalidateRows([data.length - 1]);
+	grid.updateRowCount();
+	grid.render();
+});
+
+grid.updateRowCount();
+grid.invalidateRows([data.length - 1]);
+grid.render();
+
+
+</script>
+</body>
+</html>
