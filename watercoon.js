@@ -184,7 +184,8 @@ var buildColumnData = function(data) {
 			name: row.name,
 			field: row.field_id,
 			default_value: row.default_value,
-			values: row.values
+			values: row.values,
+			order_index: row.order_index
 		};
 		copy(column, FieldType[row.field_type]);
 		columns.push(column);
@@ -218,6 +219,12 @@ var buildRowData = function(data) {
 	return ret;
 };
 
+var MenuCommand = {
+	InsertToLeft: "insert-left",
+	InsertToRight: "insert-right",
+	DeleteColumn: "delete-column",
+	EditColumn: "edit-column"
+};
 
 var DataGridManager = function(columnData, rowData, containerSelector) {
 	
@@ -232,7 +239,60 @@ var DataGridManager = function(columnData, rowData, containerSelector) {
 
 	var _columns = buildColumnData(columnData);
 	var _rows = buildRowData(rowData);
+
+	var addMenu = function(items) {
+		for (var i = 0; i < _columns.length; i++) {
+			_columns[i].header = {
+				menu: {
+					items: items
+				}
+			}
+		};
+	};
+	addMenu([
+		{
+			title: "Insert Column To Left",
+			command: MenuCommand.InsertToLeft
+		}, {
+			title: "Insert Column To Right",
+			command: MenuCommand.InsertToRight
+		}, {
+			title: "Delete Column",
+			command: MenuCommand.DeleteColumn
+		}, {
+			title: "Edit Column",
+			command: MenuCommand.EditColumn
+		}
+	]);
+
 	var _grid = new Slick.Grid(containerSelector, _rows, _columns, _options);
+	_grid.onHeaderDblClick.subscribe(function(e, args) {
+		alert(args);
+	});
+
+	var _headerMenuPlugin = new Slick.Plugins.HeaderMenu({});
+
+    _headerMenuPlugin.onCommand.subscribe(function(e, args) {
+		switch(args.command) {
+			case MenuCommand.InsertToLeft:
+				addColumn();
+				break;
+			case MenuCommand.InsertToRight:
+				alert("right");
+				break;
+			default:
+				
+				break;
+		}
+	});
+
+    _grid.registerPlugin(_headerMenuPlugin);
+
+    var addColumn = function() {
+    	columnCreatorDialog(function(data) {
+    		
+    	});
+    };
 
 	var updateFieldValue = function(e, args) {
 		var fieldId = args.grid.getColumns()[args.cell].id;
@@ -273,6 +333,20 @@ var DataGridManager = function(columnData, rowData, containerSelector) {
 
 	_grid.onCellChange.subscribe(updateFieldValue);
 	_grid.onAddNewRow.subscribe(createIssue);
+};
+
+var columnCreatorDialog = function(onFinish) {
+	$(".tmp-column-creator")[0].style.display = "block";
+	httpRequest({
+		exec: "get_field_type"
+	},
+	function(data, status) {
+		var select = $(".tmp-column-creator select");
+		for (var i = 0; i < data.length; i++) {
+			var option = new Option(data[i].description, data[i].field_type_id);
+			select.append(option);
+		};
+	});
 };
 
 var httpRequest = function(params, callback) {

@@ -18,11 +18,50 @@
 	<script src="slickgrid/slick.formatters.js"></script>
 	<script src="slickgrid/slick.editors.js"></script>
 	<script src="slickgrid/slick.grid.js"></script>
+	<script src="slickgrid/plugins/slick.headermenu.js"></script>
 	<script src="watercoon.js" type="text/javascript" charset="utf-8"></script>
 
 	<link rel="stylesheet" href="slickgrid/slick.grid.css" type="text/css"/>
 	<link rel="stylesheet" href="slickgrid/css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css"/>
 	<link rel="stylesheet" href="slickgrid/examples/examples.css" type="text/css"/>
+	<link rel="stylesheet" href="slickgrid/plugins/slick.headermenu.css" type="text/css"/>
+
+  <style>
+    /**
+     * Style the drop-down menu here since the plugin stylesheet mostly contains structural CSS.
+     */
+
+    .slick-header-menu {
+      border: 1px solid #718BB7;
+      background: #f0f0f0;
+      padding: 2px;
+      -moz-box-shadow: 2px 2px 2px silver;
+      -webkit-box-shadow: 2px 2px 2px silver;
+      min-width: 100px;
+      z-index: 20;
+    }
+
+
+    .slick-header-menuitem {
+      padding: 2px 4px;
+      border: 1px solid transparent;
+      border-radius: 3px;
+    }
+
+    .slick-header-menuitem:hover {
+      border-color: silver;
+      background: white;
+    }
+
+    .slick-header-menuitem-disabled {
+      border-color: transparent !important;
+      background: inherit !important;
+    }
+
+    .icon-help {
+      background-image: url(../images/help.png);
+    }
+  </style>
 
 	<style>
 
@@ -87,6 +126,57 @@
 		height: 20px;
 	}
 
+	.tmp-column-creator {
+		width: 400px;
+		height: 550px;
+		left: 50%;
+		top: 100px;
+		border: 2px solid gray;
+		background-color: #eeeeee;
+		position: absolute;
+		margin-left: -200px;
+		z-index: 1000;
+		display: none;
+		padding: 10px;
+	}
+	
+	.tmp-column-creator * {
+		width: 240px;
+		padding: 5px 0px;
+		margin-left: 10px;
+		margin-top: 10px;
+	}
+
+	.tmp-column-creator div {
+		width: 100px;
+		height: 20px;
+		display: inline-block;
+	}
+
+	.tmp-column-creator p {
+		font-size: 14px;
+		font-weight: bold;
+	}
+
+	.tmp-column-creator select {
+		height: 120px;
+	}
+
+	.tmp-column-creator option {
+		margin-top: 0px;
+	}
+
+	.tmp-column-creator textarea {
+		height: 200px;
+		font-size: 14px;
+	}
+
+	.tmp-button {
+		width: 100px;
+		float: right;
+		margin-right: 35px;
+	}
+
 	</style>
 
 </head>
@@ -121,5 +211,15 @@
 	<input type="button" value="Create Sheet" onclick="createSheet(this)" style="width: 90px"><br />
 	<ul id="tabs"></ul><br />
 	<div id="data-grid" style="height: 600px"></div>
+
+	<div class="tmp-column-creator">
+		<p>Create Column</p>
+		<div>Name</div><input id="column-name"><br/>
+		<div>Type</div><select size="8"></select><br />
+		<div>Values</div><textarea></textarea><br/>
+		<div>Default</div><input id="def-value">
+		<input class="tmp-button" type="button" value="Ok">
+		<input class="tmp-button" type="button" value="Cancel">
+	</div>
 
 </body>
