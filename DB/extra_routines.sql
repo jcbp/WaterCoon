@@ -150,6 +150,42 @@ BEGIN
 END $$
 
 
+DROP PROCEDURE IF EXISTS `insert_field_with_order_index` $$
+
+CREATE PROCEDURE `planwriter`.`insert_field_with_order_index` (IN sheet_id INT(11), IN field_type_id INT(11), IN order_index TINYINT, IN name VARCHAR(128), IN `values` VARCHAR(256), IN default_value VARCHAR(256))
+BEGIN
+    DECLARE last_field_id INT(11);
+
+    UPDATE field AS f
+    SET f.order_index = f.order_index + 1
+    WHERE f.order_index >= order_index AND f.sheet_id = sheet_id;
+
+    INSERT INTO field (`sheet_id`, `field_type_id`, `order_index`, `name`, `values`, `default_value`)
+    VALUES (sheet_id, field_type_id, order_index, name, `values`, default_value);
+
+    SET last_field_id = (SELECT LAST_INSERT_ID());
+    
+    SELECT field_id, f.order_index, ft.name 'field_type', f.name, `values`, default_value, field_timestamp
+    FROM field AS f
+        INNER JOIN field_type ft ON ft.field_type_id = f.field_type_id
+    WHERE f.field_id = last_field_id;
+END $$
+
+
+
+-- DROP PROCEDURE IF EXISTS `insert_field_value_without_sheet_id` $$
+-- 
+-- CREATE PROCEDURE `planwriter`.`insert_field_value_without_sheet_id` (IN issue_id INT(11), IN field_id INT(11), IN user_id INT(11), IN value TEXT)
+-- BEGIN
+--     DECLARE sheet_id INT(11) DEFAULT (SELECT sheet_id
+--     FROM issue AS i
+--     WHERE i.issue_id = issue_id);
+-- 
+--     INSERT INTO field_value (`sheet_id`, `field_id`, `user_id`, `value`, `issue_id`)
+--     VALUES (sheet_id, field_id, user_id, value, issue_id);
+-- END $$
+
+
 -- DROP PROCEDURE IF EXISTS `get_issue_field_value_by_sheet_id` $$
 -- 
 -- CREATE PROCEDURE `planwriter`.`get_issue_field_value_by_sheet_id` (IN sheet_id INT(11))

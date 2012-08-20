@@ -23,7 +23,7 @@
 		<arguments>
 			<argument>order_index</argument>
 			<argument>field_id</argument>
-			<argument>user_id</argument>
+			<argument nullable="true">user_id</argument>
 			<argument>value</argument>
 		</arguments>
 	</routine>
@@ -31,8 +31,8 @@
 		<name>update_field_value</name>
 		<arguments>
 			<argument>field_value_id</argument>
-			<argument>user_id</argument>
-			<argument>value</argument>
+			<argument nullable="true">user_id</argument>
+			<argument nullable="true">value</argument>
 		</arguments>
 	</routine>
 	<routine>
@@ -61,6 +61,17 @@
 			<argument>project_id</argument>
 			<argument>name</argument>
 			<argument>user_id</argument>
+		</arguments>
+	</routine>
+	<routine>
+		<name>insert_field_with_order_index</name>
+		<arguments>
+			<argument>sheet_id</argument>
+			<argument>field_type_id</argument>
+			<argument>order_index</argument>
+			<argument>name</argument>
+			<argument>values</argument>
+			<argument>default_value</argument>
 		</arguments>
 	</routine>
 </routines>
