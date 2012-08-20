@@ -212,14 +212,18 @@
 	<ul id="tabs"></ul><br />
 	<div id="data-grid" style="height: 600px"></div>
 
+	<div style="background-color: silver; height: 300px; display: none;" id="inline-panel">
+		Inline Panel
+	</div>
+
 	<div class="tmp-column-creator">
 		<p>Create Column</p>
 		<div>Name</div><input id="column-name"><br/>
 		<div>Type</div><select size="8"></select><br />
 		<div>Values</div><textarea></textarea><br/>
 		<div>Default</div><input id="def-value">
-		<input class="tmp-button" type="button" value="Ok">
-		<input class="tmp-button" type="button" value="Cancel">
+		<input class="tmp-button" type="button" value="Ok" id="create-column">
+		<input class="tmp-button" type="button" value="Cancel" id="cancel-column">
 	</div>
 
 </body>
