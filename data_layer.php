@@ -42,19 +42,20 @@ class DataLayer {
 		return $responder;
 	}
 
-	private function getVar($varName, $error) {
+	private function getVar($varName, $error, $nullable = false) {
 		$value = null;
-		if (!$this->arguments->isVarExist($varName)) {
-			// si no se encuentra en los argumentos, se lo busca en los datos de usuario alojados en la sesión
+		if ($this->arguments->isVarExist($varName)) {
+			$value = $this->arguments->getVar($varName);
+		}
+		// si no se encuentra en los argumentos, se lo busca en los datos de usuario alojados en la sesión
+		else {
 			if (isset($_SESSION["wc_username"][$varName])) {
 				$value = $_SESSION["wc_username"][$varName];
 			}
-			else {
+			// si no se obtuvo el valor y no admite un valor nulo, se muestra un error y se termina la ejecución
+			else if (!$nullable) {
 				$this->responder->respond($error);
 			}
-		}
-		else {
-			$value = $this->arguments->getVar($varName);
 		}
 		return $value;
 	}
@@ -92,7 +93,7 @@ class DataLayer {
 	public function buildSQLQuery($info) {
 		$sql = "call $this->routineName(";
 		for ($i=0; $i<sizeof($info); $i++) {
-			$param = $this->getVar((string)$info[$i], str_replace("%param%", $info[$i], Config::MISSING_PARAMETER));
+			$param = $this->getVar((string)$info[$i], str_replace("%param%", $info[$i], Config::MISSING_PARAMETER), (boolean)$info[$i]['nullable']);
 			$sql .= $this->addQuotesIfString($param) . ", ";
 		}
 		$sql = rtrim($sql, ", ");
