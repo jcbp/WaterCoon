@@ -172,6 +172,63 @@ BEGIN
 END $$
 
 
+DROP PROCEDURE IF EXISTS `insert_user_sheet_by_user_email` $$
+
+CREATE PROCEDURE `planwriter`.`insert_user_sheet_by_user_email` (IN sheet_id INT(11), IN email VARCHAR(256), IN permission_type_id TINYINT)
+BEGIN
+    DECLARE var_user_id INT(11);
+    DECLARE var_project_id INT(11);
+    
+    -- Se obtiene el user_id a partir del email
+    SET var_user_id = (SELECT user_id
+        FROM user AS u
+        WHERE u.email = email
+        LIMIT 1);
+
+    -- Se obtiene el project_id a partir del sheet_id
+    SET var_project_id = (SELECT project_id FROM sheet AS s
+        WHERE s.sheet_id = sheet_id);
+
+    -- Si el usuario no existe se lo registra solo con el email
+    -- Cuando se dé de alta el usuario se utiliza este mismo id para conservar las asociaciones previas
+    IF ISNULL(var_user_id) THEN
+        INSERT INTO user (email)
+        VALUES (email);
+        SET var_user_id = LAST_INSERT_ID();
+    END IF;
+
+    -- Si la hoja ya tiene el usuario asociado
+    IF EXISTS (SELECT * FROM user_sheet AS us
+               WHERE us.user_id = var_user_id AND us.sheet_id = sheet_id) THEN
+        -- Se actualizan los permisos del usuario sobre la hoja
+        UPDATE user_sheet AS us
+        SET us.permission_type_id = permission_type_id
+        WHERE us.user_id = var_user_id AND us.sheet_id = sheet_id;
+    ELSE
+        -- Sino, se asocia el usuario a la hoja, con los permisos especificados
+        INSERT IGNORE INTO user_sheet (user_id, sheet_id, permission_type_id)
+        VALUES (var_user_id, sheet_id, permission_type_id);
+    END IF;
+
+    -- Si el usuario no esta asociado al proyecto al cual pertenece
+    IF NOT EXISTS (SELECT * FROM user_project AS up
+               WHERE up.user_id = var_user_id AND up.project_id = var_project_id) THEN
+        -- Se asocia el usuario al proyecto con permiso de watcher(3)
+        INSERT INTO user_project (user_id, project_id, permission_type_id)
+        VALUES (var_user_id, var_project_id, 3);
+    END IF;
+END $$
+
+
+DROP PROCEDURE IF EXISTS `get_user_by_sheet_id` $$
+
+CREATE PROCEDURE `planwriter`.`get_user_by_sheet_id` (IN sheet_id INT(11))
+BEGIN
+    SELECT u.user_id, u.username, u.email, u.user_timestamp FROM user_sheet AS us
+        INNER JOIN user AS u ON u.user_id = us.user_id
+    WHERE us.sheet_id = sheet_id;
+END $$
+
 
 -- DROP PROCEDURE IF EXISTS `insert_field_value_without_sheet_id` $$
 -- 

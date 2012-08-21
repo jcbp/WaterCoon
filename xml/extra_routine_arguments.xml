@@ -74,4 +74,18 @@
 			<argument>default_value</argument>
 		</arguments>
 	</routine>
+	<routine>
+		<name>insert_user_sheet_by_user_email</name>
+		<arguments>
+			<argument>sheet_id</argument>
+			<argument>email</argument>
+			<argument>permission_type_id</argument>
+		</arguments>
+	</routine>
+	<routine>
+		<name>get_user_by_sheet_id</name>
+		<arguments>
+			<argument>sheet_id</argument>
+		</arguments>
+	</routine>
 </routines>
