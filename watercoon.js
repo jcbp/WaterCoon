@@ -414,7 +414,7 @@ var EventDispatcher = function(obj) {
 var JSONPDataSource = function(globalConfig) {
 
 	var globalConfig = {
-		url: "data_layer.php",
+		url: "DataLayer.php",
 		dataType: "jsonp",
 		type: "GET",
 		jsonp: "jsonp",
