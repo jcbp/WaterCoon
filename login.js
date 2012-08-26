@@ -24,20 +24,34 @@ var httpRequest = function(config) {
 
 var WCLogin = new function() {
 	
-	var _usernameObj;
-	var _passwordObj;
 	var _this = this;
+	var _login = {
+		username: "",
+		password: ""
+	};
+	var _signup = {
+		username: "",
+		email: "",
+		password: ""
+	};
 	
-	var submitByKey = function(event) {
+	var submitLoginByKey = function(event) {
 		event = window.event || event;
 		if (event.keyCode == 13) {
 			_this.submit();
 		}
 	};
 
+	var submitSignupByKey = function(event) {
+		event = window.event || event;
+		if (event.keyCode == 13) {
+			_this.submitSignup();
+		}
+	};
+
 	this.submit = function() {
-		var username = _usernameObj.value;
-		var password = _passwordObj.value;
+		var username = _login.username.value;
+		var password = _login.password.value;
 		httpRequest({
 			url: "authentication.php",
 			data: {
@@ -49,22 +63,55 @@ var WCLogin = new function() {
 					location.href = "index.php";
 				}
 				else {
-					//_passwordObj.className += " wrong-password";
-					_passwordObj.value = "";
+					//_login.password.className += " wrong-password";
+					_login.password.value = "";
+				}
+			}
+		});
+	};
+
+	this.submitSignup = function() {
+		var username = _signup.username.value;
+		var email = _signup.email.value;
+		var password = _signup.password.value;
+
+		httpRequest({
+			url: "authentication.php",
+			data: {
+				username: username,
+				email: email,
+				password: password
+			},
+			success: function(result, status) {
+				if (result == "success") {
+					alert("Welcome!");
+				}
+				else {
+					alert("algo anda mal");
 				}
 			}
 		});
 	};
 	
-	this.setInputIds = function(usernameId, passwordId) {
-		_usernameObj = document.getElementById(usernameId);
-		_passwordObj = document.getElementById(passwordId);
-		_usernameObj.onkeyup = submitByKey;
-		_passwordObj.onkeyup = submitByKey;
-		_usernameObj.focus();
+	this.setInputIds = function(usernameId, passwordId, signupUsername, signupEmail, signupPassword) {
+
+		_login.username = $("#" + usernameId)[0];
+		_login.password = $("#" + passwordId)[0];
+		_signup.username = $("#" + signupUsername)[0];
+		_signup.email = $("#" + signupEmail)[0];
+		_signup.password = $("#" + signupPassword)[0];
+
+		_login.username.onkeyup = submitLoginByKey;
+		_login.password.onkeyup = submitLoginByKey;
+
+		_signup.username.onkeyup = submitSignupByKey;
+		_signup.email.onkeyup = submitSignupByKey;
+		_signup.password.onkeyup = submitSignupByKey;
+
+		_login.username.focus();
 	};
 };
 
 $(document).ready(function() {
-	WCLogin.setInputIds("username", "password");
+	WCLogin.setInputIds("username", "password", "signup-username", "signup-email", "signup-password");
 });
