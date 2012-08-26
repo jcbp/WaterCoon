@@ -34,8 +34,8 @@ class DBConnection {
 	public function query($query) {
 		$result = $this->connection->query($query);
 		if (!$result) {
-			$this->log->error("Error to '$query'");
-			throw new Exception("Error to '$query'");
+			$this->log->error("Error to '$query': " . $this->connection->error);
+			throw new Exception("Error to '$query': " . $this->connection->error);
 		}
 		else if (gettype($result) == "boolean" && $result) {
 			$this->log->info("Successful operation");
