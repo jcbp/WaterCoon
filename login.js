@@ -53,7 +53,7 @@ var WCLogin = new function() {
 		var username = _login.username.value;
 		var password = _login.password.value;
 		httpRequest({
-			url: "authentication.php",
+			url: "classes/Auth.php",
 			data: {
 				username: username,
 				password: password
