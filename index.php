@@ -19,6 +19,7 @@
 	<script src="slickgrid/slick.editors.js"></script>
 	<script src="slickgrid/slick.grid.js"></script>
 	<script src="slickgrid/plugins/slick.headermenu.js"></script>
+	<script src="css-class-creator.js" type="text/javascript" charset="utf-8"></script>
 	<script src="watercoon.js" type="text/javascript" charset="utf-8"></script>
 
 	<link rel="stylesheet" href="slickgrid/slick.grid.css" type="text/css"/>
@@ -88,6 +89,10 @@
 		text-decoration: none;
 	}
 
+	a:visited {
+		color: #0000ee;
+	}
+
 	li {
 		font-size: 12px;
 	}
@@ -121,9 +126,14 @@
 		font-size: 10px;
 	}
 
+	.boolean-column {
+		text-align: center;
+	}
+
 	.combobox-editor {
 		width: 90%;
-		height: 20px;
+		height: 24px;
+		font-size: 10px !important;
 	}
 
 	.tmp-column-creator {
@@ -210,7 +220,19 @@
 	<input id="sheet-name" type="text" placeholder="Sheet Name">
 	<input type="button" value="Create Sheet" onclick="createSheet(this)" style="width: 90px"><br />
 	<ul id="tabs"></ul><br />
-	<div id="data-grid" style="height: 600px"></div>
+
+	<div id="data-grid" style="height: 450px"></div>
+
+	<div id="sheet-user">
+		<p>Current Users</p>
+		<div id="user-list"></div>
+		<p>Add a new user to this sheet</p>
+		<div id="add-user">
+			<input placeholder="email" id="user-email">
+			<select id="permission-list"></select>
+			<input type="button" value="Add user" id="add-user-button">
+		</div>
+	</div>
 
 	<div style="background-color: silver; height: 300px; display: none;" id="inline-panel">
 		Inline Panel
