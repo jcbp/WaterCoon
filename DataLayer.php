@@ -16,9 +16,10 @@ include 'classes/AppArgs.php';
 class DataLayer {
 	
 	private $responder;
-	private $routines;
 	private $routineName;
 	private $arguments;
+
+	private $xmlRoutine;
 
 	function __construct() {
 		$this->arguments = new AppArgs(AppArgs::GET);
@@ -26,9 +27,7 @@ class DataLayer {
 		$errorDescription = str_replace('%param%', Config::ROUTINE_VAR_NAME, Config::NO_ROUTINE_ERROR);
 		$this->routineName = $this->getVar(Config::ROUTINE_VAR_NAME, $errorDescription);
 
-		$this->routines = array();
-		$this->loadRoutineDefinition(Config::ROUTINE_DEF);
-		$this->loadRoutineDefinition(Config::ROUTINE_EXTRA_DEF);
+		$this->xmlRoutine = array(Config::ROUTINE_EXTRA_DEF, Config::ROUTINE_DEF);
 	}
 
 	private function getResponder() {
@@ -60,17 +59,6 @@ class DataLayer {
 		return $value;
 	}
 
-	private function loadRoutineDefinition($xmlName) {
-		$xml = simplexml_load_file($xmlName);
-		foreach ($xml->children() as $routine) {
-			$routineName = (string)$routine->name;
-			$this->routines[$routineName] = array();
-			foreach($routine->arguments->children() as $argument) {
-				array_push($this->routines[$routineName], $argument);
-			}
-		}
-	}
-
 	private function addQuotesIfString($value) {
 		$ret = $value;
 		if (!preg_match('/^\d+$/', $value, $matches)) {
@@ -79,21 +67,30 @@ class DataLayer {
 		return $ret;
 	}
 
+	private function getXmlObjRoutine($xmlFile) {
+		$info = null;
+		$xml = simplexml_load_file($xmlFile);
+		foreach ($xml->children() as $routine) {
+			if (((string)$routine->name) == $this->routineName) {
+				$info = $routine;
+				break;
+			}
+		}
+		return $info;
+	}
+
 	public function getRoutineInfo() {
-		$routineInfo = null;
-		if (isset($this->routines[$this->routineName])) {
-			$routineInfo = $this->routines[$this->routineName];
+		$info = null;
+		for ($i = 0; $i < sizeof($this->xmlRoutine) && $info == null; $i++) {
+			$info = $this->getXmlObjRoutine($this->xmlRoutine[$i]);
 		}
-		else {
-			$this->responder->respond(str_replace("%name%", $this->routineName, Config::INVALID_ROUTINE));
-		}
-		return $routineInfo;
+		return $info;
 	}
 
 	public function buildSQLQuery($info) {
 		$sql = "call $this->routineName(";
-		for ($i=0; $i<sizeof($info); $i++) {
-			$param = $this->getVar((string)$info[$i], str_replace("%param%", $info[$i], Config::MISSING_PARAMETER), (boolean)$info[$i]['nullable']);
+		foreach ($info->arguments->children() as $argument) {
+			$param = $this->getVar((string)$argument, str_replace("%param%", $argument, Config::MISSING_PARAMETER), (boolean)$argument['nullable']);
 			$sql .= $this->addQuotesIfString($param) . ", ";
 		}
 		$sql = rtrim($sql, ", ");
