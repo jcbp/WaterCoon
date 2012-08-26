@@ -74,6 +74,16 @@ var ComboBoxEditor = function(args) {
     init();
 };
 
+var TextFormatter = function(row, cell, value, columnDef, dataContext) {
+	return urlToHTMLAnchor(value);
+};
+
+var urlRegexp = new RegExp("((?:http|https|ftp)://[\\w\\]\\[!\"#$%&'()*+,./:;<=>?@\\^_`{|}~-]+)", "gi");
+
+var urlToHTMLAnchor = function(text) {
+	return text.replace(urlRegexp, '<a href="$1" target="_blank">$1</a>');
+};
+
 var objectIsEmpty = function(obj) {
 	var isEmpty = true;
 	for (var i in obj) {
@@ -92,6 +102,14 @@ var copy = function(objA, objB) {
 		}
 	};
 	return objA;
+};
+
+var arrayRemoveItem = function(array, item) {
+	for (var i = 0; i < array.length; i++) {
+		if (array[i] == item) {
+			array.splice(i, 1);
+		}
+	};
 };
 
 var Synchronizer = function(requirementIds) {
@@ -140,24 +158,11 @@ var WCGrid = new function() {
 			return dataSet;
 		};
 
-		var getIdColumn = function() {
-			var idColumn = {
-				id: "id",
-				name: "#",
-				field: "id",
-				width: 40,
-				cssClass: "cell-selection",
-				cannotTriggerInsert: true,
-				resizable: false,
-				selectable: false,
-				focusable: false,
-				order_index: 0
-			};
-			return idColumn;
-		};
 		
 		this.convertColumnData = function(data) {
 			data = sortByOrderIndex(data);
+			return data;
+
 			var columns = [getIdColumn()];
 
 			for (var i=0; i<data.length; i++) {
@@ -209,7 +214,7 @@ var WCGrid = new function() {
 	var FieldType = {
 		"text": {
 			editor: Slick.Editors.Text,
-			formatter: null,
+			formatter: TextFormatter,
 			validator: null
 		},
 		"longText": {
@@ -218,7 +223,8 @@ var WCGrid = new function() {
 		},
 		"boolean": {
 			editor: Slick.Editors.Checkbox,
-			formatter: Slick.Formatters.Checkmark
+			formatter: Slick.Formatters.Checkmark,
+			cssClass: "boolean-column"
 		},
 		"date": {
 			editor: Slick.Editors.Date
@@ -241,7 +247,8 @@ var WCGrid = new function() {
 		InsertToLeft: "insert-left",
 		InsertToRight: "insert-right",
 		DeleteColumn: "delete-column",
-		EditColumn: "edit-column"
+		EditColumn: "edit-column",
+		SetStyle: "set-style"
 	};
 	this.MenuCommand = MenuCommand;
 
@@ -258,11 +265,13 @@ var WCGrid = new function() {
 		}, {
 			title: "Edit Column",
 			command: MenuCommand.EditColumn
+		}, {
+			title: "Set style",
+			command: MenuCommand.SetStyle
 		}
 	];
 
 	var GridConfig = {
-		editable: true,
 		autoEdit: false,
 		enableAddRow: true,
 		forceFitColumns: true,
@@ -270,16 +279,33 @@ var WCGrid = new function() {
 		enableColumnReorder: true,
 		topPanelHeight: 300
 	};
+
+	var IdColumn = {
+		id: "id",
+		name: "ID",
+		field: "id",
+		width: 40,
+		cssClass: "cell-selection",
+		cannotTriggerInsert: true,
+		resizable: false,
+		selectable: false,
+		focusable: false,
+		order_index: 0
+	};
 		
-	this.DataGrid = function(columns, rows, containerSelector) {
+	this.DataGrid = function(columns, rows, containerSelector, options) {
 		
 		var _event = new EventDispatcher(this);
 		var _grid;
 		var _headerMenuPlugin;
+		var _options = {};
 
 		var init = function() {
+			copy(_options, GridConfig);
+			copy(_options, options);
 			settingColumns();
-			_grid = new Slick.Grid(containerSelector, rows, columns, GridConfig);
+			addTheIdColumn();
+			_grid = new Slick.Grid(containerSelector, rows, columns, _options);
 			_headerMenuPlugin = new Slick.Plugins.HeaderMenu({});
 			_headerMenuPlugin.onCommand.subscribe(menuCommandHandler);
 			_grid.registerPlugin(_headerMenuPlugin);
@@ -290,8 +316,12 @@ var WCGrid = new function() {
 			$("#inline-panel").appendTo(_grid.getTopPanel()).show();
 		};
 
+		var addTheIdColumn = function() {
+			columns.unshift(IdColumn);
+		};
+
 		var editColumn = function() {
-			
+			alert("Not implemented");
 		};
 
 		var setColumnMenu = function(column) {
@@ -313,15 +343,54 @@ var WCGrid = new function() {
 			}
 		};
 
+		var getColumnCSSClassName = function(columnId) {
+			return "field-" + columnId;
+		};
+
+		var setColumnStyle = function(columnId, style) {
+			var className = getColumnCSSClassName(columnId);
+			createCSSClass("." + className, style);
+		};
+
+		var setColumnCSSClass = function(column) {
+			if (column.style) {
+				setColumnStyle(column.field_id, column.style);
+			}
+			if (column.cssClass) {
+				column.cssClass += " " + getColumnCSSClassName(column.field_id);
+			}
+			else {
+				column.cssClass = getColumnCSSClassName(column.field_id);
+			}
+		};
+
+		var setColumnWidth = function(column) {
+			column.width = parseInt(column.width);
+		};
+
+		var setColumnResizable = function(column) {
+			if (column.field_type == "boolean") {
+				column.resizable = false;
+			}
+		};
+
+		var settingColumn = function(column) {
+			setColumnId(column);
+			setColumnMenu(column);
+			setColumnType(column);
+			setColumnCSSClass(column);
+			setColumnWidth(column);
+			setColumnResizable(column);
+		};
+
 		var settingColumns = function() {
 			for (var i = 0; i < columns.length; i++) {
-				setColumnMenu(columns[i]);
-				setColumnType(columns[i]);
+				settingColumn(columns[i]);
 			};
 		};
 
 		var menuCommandHandler = function(e, args) {
-			_event.dispatchEvent("headerMenuCommand", args.command, parseInt(args.column.order_index));
+			_event.dispatchEvent("headerMenuCommand", args.command, parseInt(args.column.order_index), args.column.id);
 		};
 
 		var updateFieldValue = function(e, args) {
@@ -344,6 +413,16 @@ var WCGrid = new function() {
 			};
 		};
 
+		var getColumnIndex = function(columnId) {
+			var index = -1;
+			for (var i = 0; i < columns.length; i++) {
+				if (columns[i].id == columnId) {
+					index = i;
+				}
+			};
+			return index;
+		};
+
 		this.addRow = function(row) {
 			rows.push(row);
 			_grid.invalidateRows([rows.length - 1]);
@@ -352,13 +431,19 @@ var WCGrid = new function() {
 		};
 
 		this.addColumn = function(column, orderIndex) {
+			// TODO: corregir order!
 			reorderColumns(orderIndex);
-			setColumnMenu(column);
-			setColumnType(column);
-			setColumnId(column);
+			settingColumn(column);
 			columns.splice(orderIndex, 0, column);
 			_grid.setColumns(columns);
 		};
+
+		this.deleteColumn = function(columnId) {
+			columns.splice(getColumnIndex(columnId), 1);
+			_grid.setColumns(columns);
+		};
+
+		this.setColumnStyle = setColumnStyle;
 
 		this.showTopPanel = function() {
 			_grid.showTopPanel();
@@ -467,6 +552,24 @@ var TransactionManager = function(dataSource) {
 		});
 	};
 
+	this.getSheetUser = function(sheetId, callback) {
+		performTransaction("get_user_by_sheet_id", { sheet_id: sheetId }, function(data, status) {
+			dispatchEvent("getSheetUser", callback, data, status);
+		});
+	};
+
+	this.getPermissionType = function(callback) {
+		performTransaction("get_permission_type", null, function(data, status) {
+			dispatchEvent("getPermissionType", callback, data, status);
+		});
+	};
+
+	this.getSheetPermission = function(sheetId, callback) {
+		performTransaction("get_sheet_permission", { sheet_id: sheetId }, function(data, status) {
+			dispatchEvent("getSheetPermission", callback, data, status);
+		});
+	};
+
 	this.getSheetData = function(sheetId, callback) {
 		var synchronizer = new Synchronizer(["column", "row"]);
 		synchronizer.notify(function(data, status) {
@@ -510,6 +613,21 @@ var TransactionManager = function(dataSource) {
 		});
 	};
 
+	this.deleteField = function(fieldId, callback) {
+		performTransaction("delete_field", { field_id: fieldId }, function(data, status) {
+			dispatchEvent("deleteField", callback, data, status);
+		});
+	};
+
+	this.updateFieldStyle = function(fieldId, style, callback) {
+		performTransaction("update_field_style", {
+			field_id: fieldId,
+			style: style
+		}, function(data, status) {
+			dispatchEvent("updateFieldStyle", callback, data, status);
+		});
+	};
+
 	this.insertProject = function(name, callback) {
 		performTransaction("insert_project_with_user", { name: name }, function(data, status) {
 			dispatchEvent("insertProject", callback, data, status);
@@ -522,6 +640,16 @@ var TransactionManager = function(dataSource) {
 			name: name
 		}, function(data, status) {
 			dispatchEvent("insertSheet", callback, data, status);
+		});
+	};
+
+	this.insertSheetUser = function(sheetId, email, permissionTypeId, callback) {
+		performTransaction("insert_user_sheet_by_user_email", {
+			sheet_id: sheetId,
+			email: email,
+			permission_type_id: permissionTypeId
+		}, function(data, status) {
+			dispatchEvent("insertSheetUser", callback, data, status);
 		});
 	};
 
@@ -558,16 +686,40 @@ var TransactionManager = function(dataSource) {
 	};
 };
 
+var Permission = {
+	Administrator: 1,
+	Editor: 2,
+	Watcher: 3
+};
+
 var ApplicationUI = function() {
 	
 	var _dataSource = new JSONPDataSource();
 	var _transaction = new TransactionManager(_dataSource);
 	var _converter = new WCGrid.DataConverter();
+	var _currentPermission = Permission.Watcher;
 	var _currentProject = null;
 	var _currentSheet = null;
 	var _currentDataGrid = null;
 
 	var _columnDialog = new ColumnDialog();
+
+	var init = function() {
+		_transaction.getPermissionType(function(data, status) {
+			for (var i = 0; i < data.length; i++) {
+				$("#permission-list").append(new Option(data[i].name, data[i].permission_type_id));
+			};
+		});
+
+		$("#add-user-button").on("click", function() {
+			var email = $("#user-email").val();
+			if (_currentSheet && email) {
+				_transaction.insertSheetUser(_currentSheet, email, $("#permission-list").val(), function(data, status) {
+					showSheetUser(_currentSheet);
+				});
+			}
+		});
+	};
 
 	_dataSource.setOnError(function() {
 		alert("Request error!");
@@ -608,7 +760,27 @@ var ApplicationUI = function() {
 		});
 	};
 
-	var headerMenuHandler = function(command, orderIndex) {
+	var deleteField = function(orderIndex, fieldId) {
+		_transaction.deleteField(fieldId, function(data, status) {
+			_currentDataGrid.deleteColumn(fieldId);
+		});
+	};
+
+	var setColumnStyle = function(fieldId) {
+		var style = prompt("Insert style comma-separated\nExample: font-weight: bold;");
+		if (style) {
+			_transaction.updateFieldStyle(fieldId, style, function(data, status) {
+				
+			});
+			_currentDataGrid.setColumnStyle(fieldId, style);
+		}
+	};
+
+	var headerMenuHandler = function(command, orderIndex, fieldId) {
+		if (_currentPermission == Permission.Watcher) {
+			alert("You have not permission puto!");
+			return;
+		}
 		switch(command) {
 			case WCGrid.MenuCommand.InsertToLeft:
 				showColumnCreationForm(orderIndex);
@@ -617,10 +789,15 @@ var ApplicationUI = function() {
 				showColumnCreationForm(orderIndex + 1);
 				break;
 			case WCGrid.MenuCommand.DeleteColumn:
-				alert("delete");
+				if (confirm("Will lose all data associated with this column. Are you sure you want to proceed?")) {
+					deleteField(orderIndex, fieldId);
+				}
 				break;
 			case WCGrid.MenuCommand.EditColumn:
-				alert("edit");
+				alert("Edit command is not implemented");
+				break;
+			case WCGrid.MenuCommand.SetStyle:
+				setColumnStyle(fieldId);
 				break;
 			default:
 				// ???
@@ -628,16 +805,49 @@ var ApplicationUI = function() {
 		}
 	};
 
+	var showSheetUser = function(sheetId) {
+		var html = "<ul>";
+		_transaction.getSheetUser(sheetId, function(data, status) {
+			for (var i = 0; i < data.length; i++) {
+				var user = "<li>" + (data[i].username || (data[i].email + " (unconfirmed account)")) + "</li>";
+				$("#user-list")[0].innerHTML += user;
+			};
+		});
+		$("#user-list")[0].innerHTML = html + "</ul>";
+	};
+
+	var isEditable = function(permission) {
+		var editable = false;
+		if (permission.permission_type_id == Permission.Editor ||
+			permission.permission_type_id == Permission.Administrator) {
+			editable = true;
+		}
+		else {
+			alert("You have not permission for edit this sheet. It will be shown as Read-Only");
+		}
+		return editable;
+	};
+
 	this.loadSheetData = function(sheetId) {
-		_transaction.getSheetData(sheetId, function(data, status) {
-			var columns = _converter.convertColumnData(data.column);
-			var rows = _converter.convertRowData(data.row);
-			_currentDataGrid = new WCGrid.DataGrid(columns, rows, "#data-grid");
+		var sync = new Synchronizer(["sheetData", "sheetPermission"]);
+		sync.notify(function(result) {
+			var columns = _converter.convertColumnData(result.sheetData.column);
+			var rows = _converter.convertRowData(result.sheetData.row);
+			var options = { editable: isEditable(result.sheetPermission[0]) };
+			_currentDataGrid = new WCGrid.DataGrid(columns, rows, "#data-grid", options);
 			_currentDataGrid.addEventListener("headerMenuCommand", headerMenuHandler);
 			_currentDataGrid.addEventListener("updateCell", updateFieldValue);
 			_currentDataGrid.addEventListener("newRow", createIssue);
 			_currentSheet = sheetId;
 		});
+		_transaction.getSheetPermission(sheetId, function(data, status) {
+			_currentPermission = data[0].permission_type_id;
+			sync.commit("sheetPermission", data);
+		});
+		_transaction.getSheetData(sheetId, function(data, status) {
+			sync.commit("sheetData", data);
+		});
+		showSheetUser(sheetId);
 	};
 
 	this.loadProjects = function() {
@@ -677,6 +887,8 @@ var ApplicationUI = function() {
 	this.addEventListener = function(eventName, callback) {
 		_transaction.addEventListener(eventName, callback);
 	};
+
+	init();
 };
 
 var ColumnDialog = function() {
@@ -773,6 +985,7 @@ var appUI;
 $(document).ready(function() {
 	appUI = new ApplicationUI();
 	appUI.loadProjects();
+
 	
 	//columnDialog = new ColumnDialog();
 });
