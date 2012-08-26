@@ -69,14 +69,14 @@ SET time_zone = "+00:00";
 -- Volcado de datos para la tabla `field_type`
 --
 
-INSERT INTO `field_type` (`field_type_id`, `name`, `description`) VALUES
-(1, 'text', 'Caracteres y Números'),
-(2, 'longText', 'Caracteres y Números (multi-línea)'),
-(3, 'boolean', 'Verdadero o Falso'),
-(4, 'date', 'Fecha'),
-(5, 'user', 'Lista de Usuarios'),
-(6, 'customList', 'Lista de Valores Personalizados'),
-(7, 'percent', 'Valor en Porcentajes');
+INSERT INTO `field_type` (`field_type_id`, `name`, `description`, `default_width`) VALUES
+(1, 'text', 'Caracteres y Números', 300),
+(2, 'longText', 'Caracteres y Números (multi-línea)', 250),
+(3, 'boolean', 'Verdadero o Falso', 60),
+(4, 'date', 'Fecha', 100),
+(5, 'user', 'Lista de Usuarios', 200),
+(6, 'customList', 'Lista de Valores Personalizados', 250),
+(7, 'percent', 'Valor en Porcentajes', 100);
 
 --
 -- Volcado de datos para la tabla `issue`

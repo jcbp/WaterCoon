@@ -29,6 +29,7 @@ CREATE  TABLE IF NOT EXISTS `planwriter`.`field_type` (
   `field_type_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(24) CHARACTER SET 'latin1' COLLATE 'latin1_spanish_ci' NOT NULL ,
   `description` VARCHAR(256) CHARACTER SET 'latin1' COLLATE 'latin1_spanish_ci' NOT NULL ,
+  `default_width` TINYINT UNSIGNED NOT NULL ,
   PRIMARY KEY (`field_type_id`) ,
   UNIQUE INDEX `data_type_id_UNIQUE` (`field_type_id` ASC) )
 ENGINE = MyISAM
@@ -99,6 +100,8 @@ CREATE  TABLE IF NOT EXISTS `planwriter`.`field` (
   `order_index` TINYINT UNSIGNED NOT NULL ,
   `name` VARCHAR(128) CHARACTER SET 'latin1' COLLATE 'latin1_spanish_ci' NOT NULL ,
   `values` VARCHAR(256) CHARACTER SET 'latin1' COLLATE 'latin1_spanish_ci' NULL DEFAULT NULL COMMENT 'comma separated values' ,
+  `style` VARCHAR(256) NULL ,
+  `width` TINYINT UNSIGNED NULL ,
   `default_value` VARCHAR(256) CHARACTER SET 'latin1' COLLATE 'latin1_spanish_ci' NULL DEFAULT NULL ,
   `field_timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
   PRIMARY KEY (`field_id`) ,

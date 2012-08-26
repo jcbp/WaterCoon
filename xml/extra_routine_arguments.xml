@@ -21,9 +21,10 @@
 	<routine>
 		<name>insert_issue_and_field_value</name>
 		<arguments>
+			<argument>user_id</argument>
 			<argument>order_index</argument>
 			<argument>field_id</argument>
-			<argument nullable="true">user_id</argument>
+			<argument nullable="true">user_id_as_value</argument>
 			<argument>value</argument>
 		</arguments>
 	</routine>
@@ -86,6 +87,26 @@
 		<name>get_user_by_sheet_id</name>
 		<arguments>
 			<argument>sheet_id</argument>
+		</arguments>
+	</routine>
+	<routine>
+		<name>get_sheet_permission</name>
+		<arguments>
+			<argument>user_id</argument>
+			<argument>sheet_id</argument>
+		</arguments>
+	</routine>
+	<routine>
+		<name>delete_field</name>
+		<arguments>
+			<argument>field_id</argument>
+		</arguments>
+	</routine>
+	<routine>
+		<name>update_field_style</name>
+		<arguments>
+			<argument>field_id</argument>
+			<argument>style</argument>
 		</arguments>
 	</routine>
 </routines>

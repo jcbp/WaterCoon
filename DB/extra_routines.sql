@@ -2,7 +2,7 @@
 DELIMITER $$
 
 DROP PROCEDURE IF EXISTS `get_user_by_name` $$
-
+-- Devuelve los datos de un usuario a partir de su nombre
 CREATE PROCEDURE `planwriter`.`get_user_by_name` (IN name varchar(40))
 BEGIN
     SELECT * FROM user
@@ -11,10 +11,10 @@ END $$
 
 
 DROP PROCEDURE IF EXISTS `get_field_by_sheet_id` $$
-
+-- Devuelve las columnas (campos) de una hoja
 CREATE PROCEDURE `planwriter`.`get_field_by_sheet_id` (IN sheet_id INT(11))
 BEGIN
-    SELECT field_id, f.order_index, ft.name 'field_type', f.name, `values`, default_value, field_timestamp
+    SELECT field_id, f.order_index, ft.name 'field_type', f.name, `values`, COALESCE(f.width, ft.default_width) 'width', f.style, default_value, field_timestamp
     FROM field AS f
         INNER JOIN sheet AS s ON f.sheet_id = s.sheet_id
         INNER JOIN field_type ft ON ft.field_type_id = f.field_type_id
@@ -23,7 +23,7 @@ END $$
 
 
 DROP PROCEDURE IF EXISTS `get_field_value_by_sheet_id` $$
-
+-- Devuelve los datos (field_value) de una hoja
 CREATE PROCEDURE `planwriter`.`get_field_value_by_sheet_id` (IN sheet_id INT(11))
 BEGIN
     SELECT field_value_id, field_id, i.order_index, user_id, value, fv.issue_id
@@ -35,13 +35,15 @@ END $$
 
 
 DROP PROCEDURE IF EXISTS `insert_issue_and_field_value` $$
-
-CREATE PROCEDURE `planwriter`.`insert_issue_and_field_value` (IN order_index TINYINT, IN field_id INT(11), IN user_id INT(11), IN value TEXT)
+-- Inserta un nuevo Issue, establece el valor para la celda del campo especificado (field_id) y
+-- crea todos los registros para el Issue con el valor default (field.default_value) si lo tuviese
+CREATE PROCEDURE `planwriter`.`insert_issue_and_field_value` (IN user_id INT(11), IN order_index TINYINT, IN field_id INT(11), IN user_id_as_value INT(11), IN value TEXT)
 BEGIN
     DECLARE done INT DEFAULT 0;
     DECLARE tmp_default_value VARCHAR(256);
     DECLARE tmp_field_id INT(11);
     DECLARE issue_id INT(11);
+    DECLARE permission_id SMALLINT;
 
     DECLARE sheet_id INT(11) DEFAULT (SELECT sheet_id
     FROM field AS f
@@ -53,35 +55,45 @@ BEGIN
 
     DECLARE CONTINUE HANDLER FOR SQLSTATE '02000' SET done = 1;
 
-    INSERT INTO issue (sheet_id, order_index)
-        VALUES (sheet_id, order_index);
+    SET permission_id = (SELECT permission_type_id
+    FROM user_sheet AS us
+    WHERE us.user_id = user_id AND us.sheet_id = sheet_id);
 
-    SET issue_id = (SELECT LAST_INSERT_ID());
+    -- Se requiere al menos permisos de Editor(2)
+    IF permission_id <= 2 THEN
+        INSERT INTO issue (sheet_id, order_index)
+            VALUES (sheet_id, order_index);
 
-    INSERT INTO field_value (sheet_id, field_id, value, issue_id)
-        VALUES (sheet_id, field_id, value, issue_id);
-    
-    OPEN field_cur;
+        SET issue_id = (SELECT LAST_INSERT_ID());
 
-    REPEAT
-        FETCH field_cur INTO tmp_field_id, tmp_default_value;
-        IF NOT done AND field_id <> tmp_field_id THEN
-            INSERT INTO field_value (sheet_id, field_id, value, issue_id)
-                VALUES (sheet_id, tmp_field_id, tmp_default_value, issue_id);
-        END IF;
-    UNTIL done END REPEAT;
+        INSERT INTO field_value (sheet_id, field_id, value, issue_id)
+            VALUES (sheet_id, field_id, value, issue_id);
+        
+        OPEN field_cur;
 
-    CLOSE field_cur;
+        REPEAT
+            FETCH field_cur INTO tmp_field_id, tmp_default_value;
+            IF NOT done AND field_id <> tmp_field_id THEN
+                INSERT INTO field_value (sheet_id, field_id, value, issue_id)
+                    VALUES (sheet_id, tmp_field_id, tmp_default_value, issue_id);
+            END IF;
+        UNTIL done END REPEAT;
 
-    SELECT fv.field_value_id, fv.field_id, i.order_index, fv.user_id, fv.value, fv.issue_id
-    FROM field_value AS fv
-        INNER JOIN issue AS i ON i.issue_id = issue_id
-    WHERE fv.issue_id = issue_id;
+        CLOSE field_cur;
+
+        SELECT fv.field_value_id, fv.field_id, i.order_index, fv.user_id, fv.value, fv.issue_id
+        FROM field_value AS fv
+            INNER JOIN issue AS i ON i.issue_id = issue_id
+        WHERE fv.issue_id = issue_id;
+    ELSE
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'You have not permission to perform this action';
+    END IF;
 END $$
 
 
 DROP PROCEDURE IF EXISTS `update_field_value` $$
-
+-- Actualiza el valor de una celda (field_value)
 CREATE PROCEDURE `planwriter`.`update_field_value` (IN field_value_id INT(11), IN user_id INT(11), IN value TEXT)
 BEGIN
     UPDATE field_value AS fv
@@ -91,7 +103,7 @@ END $$
 
 
 DROP PROCEDURE IF EXISTS `get_project_by_user_id` $$
-
+-- Devuelve los proyectos para un usuario dado
 CREATE PROCEDURE `planwriter`.`get_project_by_user_id` (IN user_id INT(11))
 BEGIN
     SELECT p.project_id, p.name, p.project_timestamp FROM project AS p
@@ -102,7 +114,7 @@ END $$
 
 
 DROP PROCEDURE IF EXISTS `get_sheet_by_project_id` $$
-
+-- Devuelve las hojas de un proyecto dado
 CREATE PROCEDURE `planwriter`.`get_sheet_by_project_id` (IN project_id INT(11), IN user_id INT(11))
 BEGIN
     SELECT * FROM sheet AS s
@@ -113,7 +125,7 @@ END $$
 
 
 DROP PROCEDURE IF EXISTS `insert_project_with_user` $$
-
+-- Crea un nuevo proyecto y lo asocia con el usuario que lo crea, con el mayor de los privilegios (1)
 CREATE PROCEDURE `planwriter`.`insert_project_with_user` (IN name VARCHAR(64), IN user_id INT(11))
 BEGIN
     DECLARE project_id INT(11);
@@ -132,7 +144,7 @@ END $$
 
 
 DROP PROCEDURE IF EXISTS `insert_sheet_with_user` $$
-
+-- Crea una nueva hoja y la asocia con el usuario que la crea, con el mayor de los privilegios (1)
 CREATE PROCEDURE `planwriter`.`insert_sheet_with_user` (IN project_id INT(11), IN name VARCHAR(64), IN user_id INT(11))
 BEGIN
     DECLARE sheet_id INT(11);
@@ -142,6 +154,7 @@ BEGIN
 
     SET sheet_id = (SELECT LAST_INSERT_ID());
 
+    -- Se agrega el usuario con permisos de Administrador (1)
     INSERT INTO user_sheet (`user_id`, `sheet_id`, `permission_type_id`)
     VALUES (user_id, sheet_id, 1);
 
@@ -151,7 +164,8 @@ END $$
 
 
 DROP PROCEDURE IF EXISTS `insert_field_with_order_index` $$
-
+-- Inserta una columna o campo (field) en la posición especificada
+-- *TODO*: AGREGAR VALIDACION DE PERMISOS
 CREATE PROCEDURE `planwriter`.`insert_field_with_order_index` (IN sheet_id INT(11), IN field_type_id INT(11), IN order_index TINYINT, IN name VARCHAR(128), IN `values` VARCHAR(256), IN default_value VARCHAR(256))
 BEGIN
     DECLARE last_field_id INT(11);
@@ -165,7 +179,7 @@ BEGIN
 
     SET last_field_id = (SELECT LAST_INSERT_ID());
     
-    SELECT field_id, f.order_index, ft.name 'field_type', f.name, `values`, default_value, field_timestamp
+    SELECT field_id, f.order_index, ft.name 'field_type', f.name, `values` 'values', default_value, field_timestamp
     FROM field AS f
         INNER JOIN field_type ft ON ft.field_type_id = f.field_type_id
     WHERE f.field_id = last_field_id;
@@ -173,7 +187,9 @@ END $$
 
 
 DROP PROCEDURE IF EXISTS `insert_user_sheet_by_user_email` $$
-
+-- Asocia un usuario a una hoja a partir del email
+-- Si el usuario no existe se lo registra con el email especificado
+-- *TODO*: AGREGAR VALIDACION DE PERMISOS
 CREATE PROCEDURE `planwriter`.`insert_user_sheet_by_user_email` (IN sheet_id INT(11), IN email VARCHAR(256), IN permission_type_id TINYINT)
 BEGIN
     DECLARE var_user_id INT(11);
@@ -221,13 +237,49 @@ END $$
 
 
 DROP PROCEDURE IF EXISTS `get_user_by_sheet_id` $$
-
+-- Retorna los usuarios asociados a una hoja dada
 CREATE PROCEDURE `planwriter`.`get_user_by_sheet_id` (IN sheet_id INT(11))
 BEGIN
     SELECT u.user_id, u.username, u.email, u.user_timestamp FROM user_sheet AS us
         INNER JOIN user AS u ON u.user_id = us.user_id
     WHERE us.sheet_id = sheet_id;
 END $$
+
+
+DROP PROCEDURE IF EXISTS `get_sheet_permission` $$
+-- Retorna el permiso que tiene un usuario para una hoja dada
+CREATE PROCEDURE `planwriter`.`get_sheet_permission` (IN user_id INT(11), IN sheet_id INT(11))
+BEGIN
+    SELECT permission_type_id
+    FROM user_sheet AS us
+    WHERE us.user_id = user_id AND us.sheet_id = sheet_id;
+END $$
+
+
+DROP PROCEDURE IF EXISTS `delete_field` $$
+-- Elimina una columna y todos los datos asociados (field_value)
+-- *TODO*: AGREGAR VALIDACION DE PERMISOS
+CREATE PROCEDURE `planwriter`.`delete_field` (IN field_id INT(11))
+BEGIN
+    DELETE FROM field
+    WHERE field.field_id = field_id;
+
+    DELETE fv FROM field_value AS fv
+    WHERE fv.field_id = field_id;
+END $$
+
+
+DROP PROCEDURE IF EXISTS `update_field_style` $$
+-- Actualiza el estilo para el campo dado
+CREATE PROCEDURE `planwriter`.`update_field_style` (IN field_id INT(11), IN style VARCHAR(256))
+BEGIN
+    UPDATE field AS f
+    SET f.style = style
+    WHERE f.field_id = field_id;
+END $$
+
+-- call update_field_style(2, 'font-weight: bold;');
+-- select * from field
 
 
 -- DROP PROCEDURE IF EXISTS `insert_field_value_without_sheet_id` $$
