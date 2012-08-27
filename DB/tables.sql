@@ -75,8 +75,8 @@ DROP TABLE IF EXISTS `planwriter`.`user` ;
 
 CREATE  TABLE IF NOT EXISTS `planwriter`.`user` (
   `user_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `username` VARCHAR(40) CHARACTER SET 'latin1' NOT NULL ,
-  `password` VARCHAR(128) CHARACTER SET 'latin1' NOT NULL ,
+  `username` VARCHAR(40) CHARACTER SET 'latin1' NULL ,
+  `password` VARCHAR(128) CHARACTER SET 'latin1' NULL ,
   `email` VARCHAR(256) CHARACTER SET 'latin1' NOT NULL ,
   `hash` VARCHAR(128) NULL DEFAULT NULL ,
   `user_timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,

@@ -156,12 +156,12 @@ INSERT INTO `user_sheet` (`user_id`, `sheet_id`, `permission_type_id`) VALUES
 --
 
 INSERT INTO `user` (`user_id`, `username`, `password`, `email`, `hash`, `user_timestamp`) VALUES
-(1, 'pepe', '123456', 'pepe@mail.com', NULL, NULL),
-(2, 'pedro', '123456', 'pedro@mail.com', NULL, NULL),
-(3, 'pipo', '123456', 'pipo@mail.com', NULL, NULL),
-(4, 'marta', '123456', 'marta@mail.com', NULL, NULL),
-(5, 'mirta', '123456', 'mirta@mail.com', NULL, NULL),
-(6, 'coco', '123456', 'coco@mail.com', NULL, NULL);
+(1, 'pepe', '$1$o0psTp.x$gLqbQkvh1vLa4cO5iNZzh0', 'pepe@mail.com', NULL, NULL),
+(2, 'pedro', '$1$pQ9QIbN5$ti52KDsQdyCmw9EQJVa151', 'pedro@mail.com', NULL, NULL),
+(3, NULL, NULL, 'pipo@mail.com', NULL, NULL),
+(4, NULL, NULL, 'marta@mail.com', NULL, NULL),
+(5, NULL, NULL, 'mirta@mail.com', NULL, NULL),
+(6, 'coco', '$1$Fqucq4fO$abIu3/kAfFQ7Cz.WyV4Ht0', 'coco@mail.com', NULL, NULL);
 
 --
 -- Volcado de datos para la tabla `user_project`

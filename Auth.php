@@ -55,7 +55,7 @@ class Auth {
 
 	private function authenticate() {
 		$row = mysqli_fetch_assoc($this->queryResult);
-		if ($row["password"] == $this->password) {
+		if (crypt($this->password, $row["password"]) == $row["password"]) {
 			session_start();
 			unset($row["password"]);
 			$_SESSION["wc_username"] = $row;

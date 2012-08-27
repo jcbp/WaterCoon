@@ -32,7 +32,8 @@ var WCLogin = new function() {
 	var _signup = {
 		username: "",
 		email: "",
-		password: ""
+		password: "",
+		checkbox: null
 	};
 	
 	var submitLoginByKey = function(event) {
@@ -71,26 +72,34 @@ var WCLogin = new function() {
 	};
 
 	this.submitSignup = function() {
-		var username = _signup.username.value;
-		var email = _signup.email.value;
-		var password = _signup.password.value;
+		if (_signup.checkbox.checked) {
+			var username = _signup.username.value;
+			var email = _signup.email.value;
+			var password = _signup.password.value;
 
-		httpRequest({
-			url: "authentication.php",
-			data: {
-				username: username,
-				email: email,
-				password: password
-			},
-			success: function(result, status) {
-				if (result == "success") {
-					alert("Welcome!");
+			httpRequest({
+				url: "SignUp.php",
+				data: {
+					username: username,
+					email: email,
+					password: password
+				},
+				success: function(result, status) {
+					if (result == "success") {
+						_signup.username.value = "";
+						_signup.email.value = "";
+						_signup.password.value = "";
+						alert("Welcome! The registration was successful.");
+					}
+					else {
+						alert("algo anda mal");
+					}
 				}
-				else {
-					alert("algo anda mal");
-				}
-			}
-		});
+			});
+		}
+		else {
+			alert("You must accept the terms!");
+		}
 	};
 	
 	this.setInputIds = function(usernameId, passwordId, signupUsername, signupEmail, signupPassword) {
@@ -100,6 +109,8 @@ var WCLogin = new function() {
 		_signup.username = $("#" + signupUsername)[0];
 		_signup.email = $("#" + signupEmail)[0];
 		_signup.password = $("#" + signupPassword)[0];
+
+		_signup.checkbox = $("#sign-up input[type=checkbox]")[0];
 
 		_login.username.onkeyup = submitLoginByKey;
 		_login.password.onkeyup = submitLoginByKey;

@@ -297,6 +297,16 @@ BEGIN
 END $$
 
 
+DROP PROCEDURE IF EXISTS `insert_user` $$
+-- Registra un nuevo usuario
+CREATE PROCEDURE `planwriter`.`insert_user` (IN username VARCHAR(40), IN password VARCHAR(128), IN email VARCHAR(256))
+BEGIN
+    INSERT INTO user (username, password, email)
+    VALUES (username, password, email)
+        ON DUPLICATE KEY UPDATE user.username = username, user.password = password;
+END $$
+
+
 -- *TODO*: ARMAR STORED PARA TRAER USUARIOS POR sheet_id, PARA USAR EN LOS field_type DE USUARIOS (5)
 
 

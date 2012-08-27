@@ -115,4 +115,12 @@
 			<argument>user_id</argument>
 		</arguments>
 	</routine>
+	<routine>
+		<name>insert_user</name>
+		<arguments>
+			<argument>username</argument>
+			<argument>password</argument>
+			<argument>email</argument>
+		</arguments>
+	</routine>
 </routines>

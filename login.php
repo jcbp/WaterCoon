@@ -35,7 +35,7 @@
 				<input type="checkbox">
 				I accept the <a href="#">Terms of Service</a>
 			</span>
-			<input type="submit" name="signup-submit" class="submit-button" value="Sign up" onclick="">
+			<input type="submit" name="signup-submit" class="submit-button" value="Sign up" onclick="WCLogin.submitSignup()">
 		</div>
 	</div>
 	<div id="footer"></div>
