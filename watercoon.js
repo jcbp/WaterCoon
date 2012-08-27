@@ -2,7 +2,7 @@
 /**
  * Custom Cell Editor: ComboBox
  */
-var ComboBoxEditor = function(args) {
+var ComboBoxEditor = function(args, keyValuePairs) {
 
     var _control;
     var _valueChanged = false;
@@ -11,10 +11,19 @@ var ComboBoxEditor = function(args) {
     var init = function() {
 		_control = document.createElement("select");
 		_control.className = "combobox-editor";
-		var items = args.column.values.split(",");
-		for (var i = 0; i < items.length; i++) {
-			addItem(items[i], i);
-		};
+
+		if (keyValuePairs) {
+			for (var i = 0; i < keyValuePairs.length; i++) {
+				addItem(keyValuePairs[i].key, keyValuePairs[i].value);
+			};
+		}
+		else {
+			var items = args.column.values.split(",");
+			for (var i = 0; i < items.length; i++) {
+				addItem(items[i], i);
+			};
+		}
+
 		_control.onchange = onValueChange;
 		args.container.appendChild(_control);
 		_control.focus();
@@ -73,6 +82,30 @@ var ComboBoxEditor = function(args) {
 
     init();
 };
+
+var UserListDropDown = function(args) {
+
+	var _this = this;
+
+	if (args.column.values) {
+		ComboBoxEditor.apply(_this, arguments);
+	}
+	else {
+		// TODO: usar otro stored que traiga solo los usuarios de la hoja
+		UserListDropDown.transaction.getUserList(function(data, status) {
+			var keyValuePairs = [];
+			for (var i = 0; i < data.length; i++) {
+				keyValuePairs.push({
+					key: data[i].username,
+					value: data[i].user_id
+				});
+			};
+			// cachear resultado?
+			ComboBoxEditor.call(_this, args, keyValuePairs);
+		});
+	}
+};
+UserListDropDown.transaction = null;
 
 var TextFormatter = function(row, cell, value, columnDef, dataContext) {
 	return urlToHTMLAnchor(value);
@@ -231,7 +264,7 @@ var WCGrid = new function() {
 		},
 		"user": {
 			// combobox: falta armar el control
-			editor: ComboBoxEditor
+			editor: UserListDropDown
 		},
 		"customList": {
 			// combobox: falta armar el control
@@ -558,6 +591,12 @@ var TransactionManager = function(dataSource) {
 		});
 	};
 
+	this.getUserList = function(callback) {
+		performTransaction("get_user_list", null, function(data, status) {
+			dispatchEvent("getUserList", callback, data, status);
+		});
+	};
+
 	this.getPermissionType = function(callback) {
 		performTransaction("get_permission_type", null, function(data, status) {
 			dispatchEvent("getPermissionType", callback, data, status);
@@ -703,6 +742,8 @@ var ApplicationUI = function() {
 	var _currentDataGrid = null;
 
 	var _columnDialog = new ColumnDialog();
+
+	UserListDropDown.transaction = new TransactionManager(new JSONPDataSource());
 
 	var init = function() {
 		_transaction.getPermissionType(function(data, status) {

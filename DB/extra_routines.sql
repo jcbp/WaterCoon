@@ -158,6 +158,12 @@ BEGIN
     INSERT INTO user_sheet (`user_id`, `sheet_id`, `permission_type_id`)
     VALUES (user_id, sheet_id, 1);
 
+    -- Se crean las columnas default
+    INSERT INTO field (`sheet_id`, `field_type_id`, `order_index`, `name`) VALUES
+    (sheet_id, 1, 1, 'Column 1'),
+    (sheet_id, 1, 2, 'Column 2'),
+    (sheet_id, 1, 3, 'Column 3');
+
     SELECT * FROM sheet AS s
     WHERE s.sheet_id = sheet_id;
 END $$
@@ -278,8 +284,20 @@ BEGIN
     WHERE f.field_id = field_id;
 END $$
 
--- call update_field_style(2, 'font-weight: bold;');
--- select * from field
+
+DROP PROCEDURE IF EXISTS `get_user_list` $$
+-- Para un usuario dato, devuelve todos los usuarios con los que comparte alguna hoja
+-- *TODO*: refactorizar este SP
+CREATE PROCEDURE `planwriter`.`get_user_list` (IN user_id INT(11))
+BEGIN
+    SELECT DISTINCT u.user_id, u.username, u.email, u.user_timestamp FROM user_sheet AS us2
+        INNER JOIN user AS u ON u.user_id = us2.user_id
+    WHERE us2.sheet_id IN (SELECT sheet_id FROM user_sheet AS us
+                           WHERE us.user_id = user_id);
+END $$
+
+
+-- *TODO*: ARMAR STORED PARA TRAER USUARIOS POR sheet_id, PARA USAR EN LOS field_type DE USUARIOS (5)
 
 
 -- DROP PROCEDURE IF EXISTS `insert_field_value_without_sheet_id` $$

@@ -90,21 +90,21 @@ INSERT INTO `issue` (`issue_id`, `sheet_id`, `order_index`) VALUES
 -- Volcado de datos para la tabla `field`
 --
 
-INSERT INTO `field` (`field_id`, `sheet_id`, `field_type_id`, `order_index`, `name`, `values`, `default_value`, `field_timestamp`) VALUES
-(1, 1, 1, 1, 'Title', NULL, NULL, NULL),
-(2, 1, 6, 2, 'Priority', 'Low,Normal,High', 'Normal', NULL),
-(3, 1, 6, 3, 'Status', 'To Do,In Progress,On Hold,Done,Verified', 'To Do', NULL),
-(4, 1, 2, 4, 'Description', NULL, NULL, NULL),
-(5, 1, 5, 5, 'Asignee', NULL, NULL, NULL),
-(6, 2, 3, 1, 'Done', NULL, NULL, NULL),
-(7, 2, 1, 2, 'Todo', 'Item 1,Item 2, Item 3', 'Item 1', NULL),
-(8, 2, 2, 3, 'Notes', NULL, NULL, NULL),
-(9, 3, 7, 2, '% Complete', NULL, NULL, NULL),
-(10, 3, 1, 1, 'Title', NULL, NULL, NULL),
-(11, 3, 6, 3, 'Status', 'To Do,In Progress,On Hold,Done,Verified', 'To Do', NULL),
-(12, 3, 6, 4, 'Priority', 'Low,Normal,High', 'Normal', NULL),
-(13, 3, 2, 5, 'Description', NULL, NULL, NULL),
-(14, 3, 4, 6, 'Due Date', NULL, NULL, NULL);
+INSERT INTO `field` (`field_id`, `sheet_id`, `field_type_id`, `order_index`, `name`, `values`, `style`, `default_value`, `field_timestamp`) VALUES
+(1, 1, 1, 1, 'Title', NULL, NULL, NULL, NULL),
+(2, 1, 6, 2, 'Priority', 'Low,Normal,High', 'font-weight: bold;', 'Normal', NULL),
+(3, 1, 6, 3, 'Status', 'To Do,In Progress,On Hold,Done,Verified', 'text-decoration: underline;', 'To Do', NULL),
+(4, 1, 2, 4, 'Description', NULL, 'font-style: italic;', NULL, NULL),
+(5, 1, 5, 5, 'Asignee', NULL, NULL, NULL, NULL),
+(6, 2, 3, 1, 'Done', NULL, NULL, NULL, NULL),
+(7, 2, 1, 2, 'Todo', 'Item 1,Item 2, Item 3', NULL, 'Item 1', NULL),
+(8, 2, 2, 3, 'Notes', NULL, NULL, NULL, NULL),
+(9, 3, 7, 2, '% Complete', NULL, NULL, NULL, NULL),
+(10, 3, 1, 1, 'Title', NULL, NULL, NULL, NULL),
+(11, 3, 6, 3, 'Status', 'To Do,In Progress,On Hold,Done,Verified', NULL, 'To Do', NULL),
+(12, 3, 6, 4, 'Priority', 'Low,Normal,High', NULL, 'Normal', NULL),
+(13, 3, 2, 5, 'Description', NULL, NULL, NULL, NULL),
+(14, 3, 4, 6, 'Due Date', NULL, NULL, NULL, NULL);
 
 --
 -- Volcado de datos para la tabla `field_value`
@@ -146,8 +146,10 @@ INSERT INTO `sheet` (`sheet_id`, `project_id`, `name`, `sheet_timestamp`) VALUES
 INSERT INTO `user_sheet` (`user_id`, `sheet_id`, `permission_type_id`) VALUES
 (1, 1, 1),
 (1, 2, 1),
+(1, 3, 1),
 (2, 1, 1),
-(1, 3, 1);
+(4, 1, 1),
+(6, 1, 1);
 
 --
 -- Volcado de datos para la tabla `user`
@@ -155,7 +157,11 @@ INSERT INTO `user_sheet` (`user_id`, `sheet_id`, `permission_type_id`) VALUES
 
 INSERT INTO `user` (`user_id`, `username`, `password`, `email`, `hash`, `user_timestamp`) VALUES
 (1, 'pepe', '123456', 'pepe@mail.com', NULL, NULL),
-(2, 'coco', '123456', 'coco@mail.com', NULL, NULL);
+(2, 'pedro', '123456', 'pedro@mail.com', NULL, NULL),
+(3, 'pipo', '123456', 'pipo@mail.com', NULL, NULL),
+(4, 'marta', '123456', 'marta@mail.com', NULL, NULL),
+(5, 'mirta', '123456', 'mirta@mail.com', NULL, NULL),
+(6, 'coco', '123456', 'coco@mail.com', NULL, NULL);
 
 --
 -- Volcado de datos para la tabla `user_project`
@@ -164,7 +170,9 @@ INSERT INTO `user` (`user_id`, `username`, `password`, `email`, `hash`, `user_ti
 INSERT INTO `user_project` (`user_id`, `project_id`, `permission_type_id`) VALUES
 (1, 1, 1),
 (1, 2, 1),
-(2, 1, 1);
+(2, 1, 1),
+(4, 1, 1),
+(6, 1, 1);
 
 --
 -- Volcado de datos para la tabla `permission_type`

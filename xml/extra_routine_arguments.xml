@@ -109,4 +109,10 @@
 			<argument>style</argument>
 		</arguments>
 	</routine>
+	<routine>
+		<name>get_user_list</name>
+		<arguments>
+			<argument>user_id</argument>
+		</arguments>
+	</routine>
 </routines>
