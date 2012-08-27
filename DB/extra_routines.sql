@@ -301,9 +301,14 @@ DROP PROCEDURE IF EXISTS `insert_user` $$
 -- Registra un nuevo usuario
 CREATE PROCEDURE `planwriter`.`insert_user` (IN username VARCHAR(40), IN password VARCHAR(128), IN email VARCHAR(256))
 BEGIN
-    INSERT INTO user (username, password, email)
-    VALUES (username, password, email)
-        ON DUPLICATE KEY UPDATE user.username = username, user.password = password;
+    IF EXISTS(SELECT * FROM user WHERE user.username = username) THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'The user already exists';
+    ELSE
+        INSERT INTO user (username, password, email)
+        VALUES (username, password, email)
+            ON DUPLICATE KEY UPDATE user.username = username, user.password = password;
+    END IF;
 END $$
 
 

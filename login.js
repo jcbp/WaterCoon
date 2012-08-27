@@ -92,7 +92,7 @@ var WCLogin = new function() {
 						alert("Welcome! The registration was successful.");
 					}
 					else {
-						alert("algo anda mal");
+						alert(result[0].split(":")[1]);
 					}
 				}
 			});
