@@ -1,9 +1,13 @@
 
+--
+-- Base de datos: `watercoon`
+--
 
 USE watercoon;
 
-
+--
 -- Borrado de datos
+--
 
 DELETE FROM `field`
 WHERE field_id < 1000;
@@ -44,8 +48,9 @@ WHERE user_id < 1000;
 DELETE FROM `user_project`
 WHERE user_id < 1000;
 
-
+--
 -- Inserción de datos
+--
 
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -55,10 +60,6 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8 */;
-
---
--- Base de datos: `watercoon`
---
 
 --
 -- Volcado de datos para la tabla `field_type`
@@ -179,7 +180,9 @@ INSERT INTO `permission_type` (`permission_type_id`, `name`) VALUES
 (3, 'Watcher');
 
 
+--
 -- Reset AUTO_INCREMENT index
+--
 
 ALTER TABLE `field` AUTO_INCREMENT = 1;
 ALTER TABLE `field_history` AUTO_INCREMENT = 1;

@@ -16,7 +16,7 @@ END $$
             
 DROP PROCEDURE IF EXISTS insert_field $$
 
-CREATE PROCEDURE insert_field(IN field_id int(11), IN sheet_id int(11), IN field_type_id int(3), IN order_index int(3), IN name varchar(128), IN values varchar(256), IN style varchar(256), IN width int(3), IN default_value varchar(256), IN field_timestamp timestamp)
+CREATE PROCEDURE insert_field(IN field_id int(11), IN sheet_id int(11), IN field_type_id int(3), IN order_index int(3), IN name varchar(128), IN `values` varchar(256), IN style varchar(256), IN width int(3), IN default_value varchar(256), IN field_timestamp timestamp)
 BEGIN
       IF field_id<=0 OR ISNULL(field_id) THEN
             INSERT INTO field (`sheet_id`, `field_type_id`, `order_index`, `name`, `values`, `style`, `width`, `default_value`, `field_timestamp`)
