@@ -1,9 +1,11 @@
 
+USE watercoon;
+
 DELIMITER $$
 
 DROP PROCEDURE IF EXISTS `get_user_by_name` $$
 -- Devuelve los datos de un usuario a partir de su nombre
-CREATE PROCEDURE `planwriter`.`get_user_by_name` (IN name varchar(40))
+CREATE PROCEDURE `watercoon`.`get_user_by_name` (IN name varchar(40))
 BEGIN
     SELECT * FROM user
     WHERE LOWER(user.username) = LOWER(name);
@@ -12,7 +14,7 @@ END $$
 
 DROP PROCEDURE IF EXISTS `get_field_by_sheet_id` $$
 -- Devuelve las columnas (campos) de una hoja
-CREATE PROCEDURE `planwriter`.`get_field_by_sheet_id` (IN sheet_id INT(11))
+CREATE PROCEDURE `watercoon`.`get_field_by_sheet_id` (IN sheet_id INT(11))
 BEGIN
     SELECT field_id, f.order_index, ft.name 'field_type', f.name, `values`, COALESCE(f.width, ft.default_width) 'width', f.style, default_value, field_timestamp
     FROM field AS f
@@ -24,7 +26,7 @@ END $$
 
 DROP PROCEDURE IF EXISTS `get_field_value_by_sheet_id` $$
 -- Devuelve los datos (field_value) de una hoja
-CREATE PROCEDURE `planwriter`.`get_field_value_by_sheet_id` (IN sheet_id INT(11))
+CREATE PROCEDURE `watercoon`.`get_field_value_by_sheet_id` (IN sheet_id INT(11))
 BEGIN
     SELECT field_value_id, field_id, i.order_index, user_id, value, fv.issue_id
     FROM field_value AS fv
@@ -37,7 +39,7 @@ END $$
 DROP PROCEDURE IF EXISTS `insert_issue_and_field_value` $$
 -- Inserta un nuevo Issue, establece el valor para la celda del campo especificado (field_id) y
 -- crea todos los registros para el Issue con el valor default (field.default_value) si lo tuviese
-CREATE PROCEDURE `planwriter`.`insert_issue_and_field_value` (IN user_id INT(11), IN order_index TINYINT, IN field_id INT(11), IN user_id_as_value INT(11), IN value TEXT)
+CREATE PROCEDURE `watercoon`.`insert_issue_and_field_value` (IN user_id INT(11), IN order_index TINYINT, IN field_id INT(11), IN user_id_as_value INT(11), IN value TEXT)
 BEGIN
     DECLARE done INT DEFAULT 0;
     DECLARE tmp_default_value VARCHAR(256);
@@ -94,7 +96,7 @@ END $$
 
 DROP PROCEDURE IF EXISTS `update_field_value` $$
 -- Actualiza el valor de una celda (field_value)
-CREATE PROCEDURE `planwriter`.`update_field_value` (IN field_value_id INT(11), IN user_id INT(11), IN value TEXT)
+CREATE PROCEDURE `watercoon`.`update_field_value` (IN field_value_id INT(11), IN user_id INT(11), IN value TEXT)
 BEGIN
     UPDATE field_value AS fv
     SET fv.user_id = user_id, fv.value = value
@@ -104,7 +106,7 @@ END $$
 
 DROP PROCEDURE IF EXISTS `get_project_by_user_id` $$
 -- Devuelve los proyectos para un usuario dado
-CREATE PROCEDURE `planwriter`.`get_project_by_user_id` (IN user_id INT(11))
+CREATE PROCEDURE `watercoon`.`get_project_by_user_id` (IN user_id INT(11))
 BEGIN
     SELECT p.project_id, p.name, p.project_timestamp FROM project AS p
         INNER JOIN user_project AS up ON p.project_id = up.project_id
@@ -115,7 +117,7 @@ END $$
 
 DROP PROCEDURE IF EXISTS `get_sheet_by_project_id` $$
 -- Devuelve las hojas de un proyecto dado
-CREATE PROCEDURE `planwriter`.`get_sheet_by_project_id` (IN project_id INT(11), IN user_id INT(11))
+CREATE PROCEDURE `watercoon`.`get_sheet_by_project_id` (IN project_id INT(11), IN user_id INT(11))
 BEGIN
     SELECT * FROM sheet AS s
         INNER JOIN user_sheet AS us ON s.sheet_id = us.sheet_id
@@ -126,7 +128,7 @@ END $$
 
 DROP PROCEDURE IF EXISTS `insert_project_with_user` $$
 -- Crea un nuevo proyecto y lo asocia con el usuario que lo crea, con el mayor de los privilegios (1)
-CREATE PROCEDURE `planwriter`.`insert_project_with_user` (IN name VARCHAR(64), IN user_id INT(11))
+CREATE PROCEDURE `watercoon`.`insert_project_with_user` (IN name VARCHAR(64), IN user_id INT(11))
 BEGIN
     DECLARE project_id INT(11);
 
@@ -145,7 +147,7 @@ END $$
 
 DROP PROCEDURE IF EXISTS `insert_sheet_with_user` $$
 -- Crea una nueva hoja y la asocia con el usuario que la crea, con el mayor de los privilegios (1)
-CREATE PROCEDURE `planwriter`.`insert_sheet_with_user` (IN project_id INT(11), IN name VARCHAR(64), IN user_id INT(11))
+CREATE PROCEDURE `watercoon`.`insert_sheet_with_user` (IN project_id INT(11), IN name VARCHAR(64), IN user_id INT(11))
 BEGIN
     DECLARE sheet_id INT(11);
 
@@ -172,7 +174,7 @@ END $$
 DROP PROCEDURE IF EXISTS `insert_field_with_order_index` $$
 -- Inserta una columna o campo (field) en la posición especificada
 -- *TODO*: AGREGAR VALIDACION DE PERMISOS
-CREATE PROCEDURE `planwriter`.`insert_field_with_order_index` (IN sheet_id INT(11), IN field_type_id INT(11), IN order_index TINYINT, IN name VARCHAR(128), IN `values` VARCHAR(256), IN default_value VARCHAR(256))
+CREATE PROCEDURE `watercoon`.`insert_field_with_order_index` (IN sheet_id INT(11), IN field_type_id INT(11), IN order_index TINYINT, IN name VARCHAR(128), IN `values` VARCHAR(256), IN default_value VARCHAR(256))
 BEGIN
     DECLARE last_field_id INT(11);
 
@@ -196,7 +198,7 @@ DROP PROCEDURE IF EXISTS `insert_user_sheet_by_user_email` $$
 -- Asocia un usuario a una hoja a partir del email
 -- Si el usuario no existe se lo registra con el email especificado
 -- *TODO*: AGREGAR VALIDACION DE PERMISOS
-CREATE PROCEDURE `planwriter`.`insert_user_sheet_by_user_email` (IN sheet_id INT(11), IN email VARCHAR(256), IN permission_type_id TINYINT)
+CREATE PROCEDURE `watercoon`.`insert_user_sheet_by_user_email` (IN sheet_id INT(11), IN email VARCHAR(256), IN permission_type_id TINYINT)
 BEGIN
     DECLARE var_user_id INT(11);
     DECLARE var_project_id INT(11);
@@ -244,7 +246,7 @@ END $$
 
 DROP PROCEDURE IF EXISTS `get_user_by_sheet_id` $$
 -- Retorna los usuarios asociados a una hoja dada
-CREATE PROCEDURE `planwriter`.`get_user_by_sheet_id` (IN sheet_id INT(11))
+CREATE PROCEDURE `watercoon`.`get_user_by_sheet_id` (IN sheet_id INT(11))
 BEGIN
     SELECT u.user_id, u.username, u.email, u.user_timestamp FROM user_sheet AS us
         INNER JOIN user AS u ON u.user_id = us.user_id
@@ -254,7 +256,7 @@ END $$
 
 DROP PROCEDURE IF EXISTS `get_sheet_permission` $$
 -- Retorna el permiso que tiene un usuario para una hoja dada
-CREATE PROCEDURE `planwriter`.`get_sheet_permission` (IN user_id INT(11), IN sheet_id INT(11))
+CREATE PROCEDURE `watercoon`.`get_sheet_permission` (IN user_id INT(11), IN sheet_id INT(11))
 BEGIN
     SELECT permission_type_id
     FROM user_sheet AS us
@@ -265,7 +267,7 @@ END $$
 DROP PROCEDURE IF EXISTS `delete_field` $$
 -- Elimina una columna y todos los datos asociados (field_value)
 -- *TODO*: AGREGAR VALIDACION DE PERMISOS
-CREATE PROCEDURE `planwriter`.`delete_field` (IN field_id INT(11))
+CREATE PROCEDURE `watercoon`.`delete_field` (IN field_id INT(11))
 BEGIN
     DELETE FROM field
     WHERE field.field_id = field_id;
@@ -277,7 +279,7 @@ END $$
 
 DROP PROCEDURE IF EXISTS `update_field_style` $$
 -- Actualiza el estilo para el campo dado
-CREATE PROCEDURE `planwriter`.`update_field_style` (IN field_id INT(11), IN style VARCHAR(256))
+CREATE PROCEDURE `watercoon`.`update_field_style` (IN field_id INT(11), IN style VARCHAR(256))
 BEGIN
     UPDATE field AS f
     SET f.style = style
@@ -288,7 +290,7 @@ END $$
 DROP PROCEDURE IF EXISTS `get_user_list` $$
 -- Para un usuario dato, devuelve todos los usuarios con los que comparte alguna hoja
 -- *TODO*: refactorizar este SP
-CREATE PROCEDURE `planwriter`.`get_user_list` (IN user_id INT(11))
+CREATE PROCEDURE `watercoon`.`get_user_list` (IN user_id INT(11))
 BEGIN
     SELECT DISTINCT u.user_id, u.username, u.email, u.user_timestamp FROM user_sheet AS us2
         INNER JOIN user AS u ON u.user_id = us2.user_id
@@ -299,7 +301,7 @@ END $$
 
 DROP PROCEDURE IF EXISTS `insert_user` $$
 -- Registra un nuevo usuario
-CREATE PROCEDURE `planwriter`.`insert_user` (IN username VARCHAR(40), IN password VARCHAR(128), IN email VARCHAR(256))
+CREATE PROCEDURE `watercoon`.`insert_user` (IN username VARCHAR(40), IN password VARCHAR(128), IN email VARCHAR(256))
 BEGIN
     IF EXISTS(SELECT * FROM user WHERE user.username = username) THEN
         SIGNAL SQLSTATE '45000'
@@ -317,7 +319,7 @@ END $$
 
 -- DROP PROCEDURE IF EXISTS `insert_field_value_without_sheet_id` $$
 -- 
--- CREATE PROCEDURE `planwriter`.`insert_field_value_without_sheet_id` (IN issue_id INT(11), IN field_id INT(11), IN user_id INT(11), IN value TEXT)
+-- CREATE PROCEDURE `watercoon`.`insert_field_value_without_sheet_id` (IN issue_id INT(11), IN field_id INT(11), IN user_id INT(11), IN value TEXT)
 -- BEGIN
 --     DECLARE sheet_id INT(11) DEFAULT (SELECT sheet_id
 --     FROM issue AS i
@@ -330,7 +332,7 @@ END $$
 
 -- DROP PROCEDURE IF EXISTS `get_issue_field_value_by_sheet_id` $$
 -- 
--- CREATE PROCEDURE `planwriter`.`get_issue_field_value_by_sheet_id` (IN sheet_id INT(11))
+-- CREATE PROCEDURE `watercoon`.`get_issue_field_value_by_sheet_id` (IN sheet_id INT(11))
 -- BEGIN
 --     SELECT field_value_id, field_id, i.order_index, user_id, value, fv.issue_id
 --     FROM field_value AS fv

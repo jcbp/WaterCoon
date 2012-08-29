@@ -1,11 +1,6 @@
--- phpMyAdmin SQL Dump
--- version 3.4.5
--- http://www.phpmyadmin.net
---
--- Servidor: localhost
--- Tiempo de generación: 14-07-2012 a las 01:09:10
--- Versión del servidor: 5.5.16
--- Versión de PHP: 5.3.8
+
+
+USE watercoon;
 
 
 -- Borrado de datos
@@ -62,7 +57,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8 */;
 
 --
--- Base de datos: `planwriter`
+-- Base de datos: `watercoon`
 --
 
 --

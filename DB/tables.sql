@@ -2,15 +2,16 @@ SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
 
-CREATE SCHEMA IF NOT EXISTS `planwriter` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
-USE `planwriter` ;
+DROP SCHEMA IF EXISTS `watercoon` ;
+CREATE SCHEMA IF NOT EXISTS `watercoon` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
+USE `watercoon` ;
 
 -- -----------------------------------------------------
--- Table `planwriter`.`sheet_history`
+-- Table `watercoon`.`sheet_history`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `planwriter`.`sheet_history` ;
+DROP TABLE IF EXISTS `watercoon`.`sheet_history` ;
 
-CREATE  TABLE IF NOT EXISTS `planwriter`.`sheet_history` (
+CREATE  TABLE IF NOT EXISTS `watercoon`.`sheet_history` (
   `sheet_history_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ,
   `username` VARCHAR(40) NOT NULL ,
   `operation` ENUM('DEL','INS','UPD') NOT NULL ,
@@ -21,11 +22,11 @@ ENGINE = MyISAM;
 
 
 -- -----------------------------------------------------
--- Table `planwriter`.`field_type`
+-- Table `watercoon`.`field_type`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `planwriter`.`field_type` ;
+DROP TABLE IF EXISTS `watercoon`.`field_type` ;
 
-CREATE  TABLE IF NOT EXISTS `planwriter`.`field_type` (
+CREATE  TABLE IF NOT EXISTS `watercoon`.`field_type` (
   `field_type_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(24) CHARACTER SET 'latin1' COLLATE 'latin1_spanish_ci' NOT NULL ,
   `description` VARCHAR(256) CHARACTER SET 'latin1' COLLATE 'latin1_spanish_ci' NOT NULL ,
@@ -37,11 +38,11 @@ AUTO_INCREMENT = 8;
 
 
 -- -----------------------------------------------------
--- Table `planwriter`.`project`
+-- Table `watercoon`.`project`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `planwriter`.`project` ;
+DROP TABLE IF EXISTS `watercoon`.`project` ;
 
-CREATE  TABLE IF NOT EXISTS `planwriter`.`project` (
+CREATE  TABLE IF NOT EXISTS `watercoon`.`project` (
   `project_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(64) CHARACTER SET 'latin1' NOT NULL ,
   `project_timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
@@ -52,11 +53,11 @@ AUTO_INCREMENT = 2;
 
 
 -- -----------------------------------------------------
--- Table `planwriter`.`sheet`
+-- Table `watercoon`.`sheet`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `planwriter`.`sheet` ;
+DROP TABLE IF EXISTS `watercoon`.`sheet` ;
 
-CREATE  TABLE IF NOT EXISTS `planwriter`.`sheet` (
+CREATE  TABLE IF NOT EXISTS `watercoon`.`sheet` (
   `sheet_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ,
   `project_id` INT(11) UNSIGNED NOT NULL ,
   `name` VARCHAR(128) CHARACTER SET 'latin1' COLLATE 'latin1_spanish_ci' NOT NULL ,
@@ -69,11 +70,11 @@ AUTO_INCREMENT = 3;
 
 
 -- -----------------------------------------------------
--- Table `planwriter`.`user`
+-- Table `watercoon`.`user`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `planwriter`.`user` ;
+DROP TABLE IF EXISTS `watercoon`.`user` ;
 
-CREATE  TABLE IF NOT EXISTS `planwriter`.`user` (
+CREATE  TABLE IF NOT EXISTS `watercoon`.`user` (
   `user_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ,
   `username` VARCHAR(40) CHARACTER SET 'latin1' NULL ,
   `password` VARCHAR(128) CHARACTER SET 'latin1' NULL ,
@@ -89,11 +90,11 @@ AUTO_INCREMENT = 2;
 
 
 -- -----------------------------------------------------
--- Table `planwriter`.`field`
+-- Table `watercoon`.`field`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `planwriter`.`field` ;
+DROP TABLE IF EXISTS `watercoon`.`field` ;
 
-CREATE  TABLE IF NOT EXISTS `planwriter`.`field` (
+CREATE  TABLE IF NOT EXISTS `watercoon`.`field` (
   `field_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ,
   `sheet_id` INT(11) UNSIGNED NOT NULL ,
   `field_type_id` TINYINT UNSIGNED NOT NULL ,
@@ -113,11 +114,11 @@ AUTO_INCREMENT = 6;
 
 
 -- -----------------------------------------------------
--- Table `planwriter`.`issue`
+-- Table `watercoon`.`issue`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `planwriter`.`issue` ;
+DROP TABLE IF EXISTS `watercoon`.`issue` ;
 
-CREATE  TABLE IF NOT EXISTS `planwriter`.`issue` (
+CREATE  TABLE IF NOT EXISTS `watercoon`.`issue` (
   `issue_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ,
   `sheet_id` INT(11) UNSIGNED NOT NULL ,
   `order_index` MEDIUMINT UNSIGNED NOT NULL ,
@@ -128,11 +129,11 @@ ENGINE = MyISAM;
 
 
 -- -----------------------------------------------------
--- Table `planwriter`.`field_value`
+-- Table `watercoon`.`field_value`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `planwriter`.`field_value` ;
+DROP TABLE IF EXISTS `watercoon`.`field_value` ;
 
-CREATE  TABLE IF NOT EXISTS `planwriter`.`field_value` (
+CREATE  TABLE IF NOT EXISTS `watercoon`.`field_value` (
   `field_value_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ,
   `sheet_id` INT(11) UNSIGNED NOT NULL ,
   `field_id` INT(11) UNSIGNED NOT NULL ,
@@ -150,11 +151,11 @@ AUTO_INCREMENT = 2;
 
 
 -- -----------------------------------------------------
--- Table `planwriter`.`permission_type`
+-- Table `watercoon`.`permission_type`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `planwriter`.`permission_type` ;
+DROP TABLE IF EXISTS `watercoon`.`permission_type` ;
 
-CREATE  TABLE IF NOT EXISTS `planwriter`.`permission_type` (
+CREATE  TABLE IF NOT EXISTS `watercoon`.`permission_type` (
   `permission_type_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(32) NOT NULL ,
   PRIMARY KEY (`permission_type_id`) ,
@@ -163,11 +164,11 @@ ENGINE = MyISAM;
 
 
 -- -----------------------------------------------------
--- Table `planwriter`.`user_project`
+-- Table `watercoon`.`user_project`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `planwriter`.`user_project` ;
+DROP TABLE IF EXISTS `watercoon`.`user_project` ;
 
-CREATE  TABLE IF NOT EXISTS `planwriter`.`user_project` (
+CREATE  TABLE IF NOT EXISTS `watercoon`.`user_project` (
   `user_id` SMALLINT UNSIGNED NOT NULL ,
   `project_id` INT(11) UNSIGNED NOT NULL ,
   `permission_type_id` SMALLINT UNSIGNED NOT NULL COMMENT 'values:owner,admin,watch' ,
@@ -178,11 +179,11 @@ ENGINE = MyISAM;
 
 
 -- -----------------------------------------------------
--- Table `planwriter`.`field_history`
+-- Table `watercoon`.`field_history`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `planwriter`.`field_history` ;
+DROP TABLE IF EXISTS `watercoon`.`field_history` ;
 
-CREATE  TABLE IF NOT EXISTS `planwriter`.`field_history` (
+CREATE  TABLE IF NOT EXISTS `watercoon`.`field_history` (
   `field_history_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ,
   `username` VARCHAR(40) NOT NULL ,
   `operation` ENUM('DEL','INS','UPD') NOT NULL ,
@@ -194,11 +195,11 @@ ENGINE = MyISAM;
 
 
 -- -----------------------------------------------------
--- Table `planwriter`.`project_history`
+-- Table `watercoon`.`project_history`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `planwriter`.`project_history` ;
+DROP TABLE IF EXISTS `watercoon`.`project_history` ;
 
-CREATE  TABLE IF NOT EXISTS `planwriter`.`project_history` (
+CREATE  TABLE IF NOT EXISTS `watercoon`.`project_history` (
   `project_history_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ,
   `username` VARCHAR(40) NOT NULL ,
   `operation` ENUM('DEL','INS','UPD') NOT NULL ,
@@ -209,11 +210,11 @@ ENGINE = MyISAM;
 
 
 -- -----------------------------------------------------
--- Table `planwriter`.`user_sheet`
+-- Table `watercoon`.`user_sheet`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `planwriter`.`user_sheet` ;
+DROP TABLE IF EXISTS `watercoon`.`user_sheet` ;
 
-CREATE  TABLE IF NOT EXISTS `planwriter`.`user_sheet` (
+CREATE  TABLE IF NOT EXISTS `watercoon`.`user_sheet` (
   `user_id` INT(11) UNSIGNED NOT NULL ,
   `sheet_id` INT(11) UNSIGNED NOT NULL ,
   `permission_type_id` TINYINT UNSIGNED NOT NULL ,
