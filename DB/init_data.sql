@@ -1,9 +1,9 @@
 
 --
--- Base de datos: `watercoon`
+-- Base de datos: `domsurco_watercoon`
 --
 
-USE watercoon;
+USE domsurco_watercoon;
 
 --
 -- Borrado de datos
@@ -123,8 +123,8 @@ INSERT INTO `field_value` (`field_value_id`, `sheet_id`, `field_id`, `user_id`, 
 --
 
 INSERT INTO `project` (`project_id`, `name`, `project_timestamp`) VALUES
-(1, 'WaterCoon', NULL),
-(2, 'WaterCoon Demos', NULL);
+(1, 'watercoon', NULL),
+(2, 'watercoon Demos', NULL);
 
 --
 -- Volcado de datos para la tabla `sheet`
