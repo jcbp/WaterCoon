@@ -114,6 +114,7 @@ var TextFormatter = function(row, cell, value, columnDef, dataContext) {
 var urlRegexp = new RegExp("((?:http|https|ftp)://[\\w\\]\\[!\"#$%&'()*+,./:;<=>?@\\^_`{|}~-]+)", "gi");
 
 var urlToHTMLAnchor = function(text) {
+	text = text || "";
 	return text.replace(urlRegexp, '<a href="$1" target="_blank">$1</a>');
 };
 
@@ -338,6 +339,10 @@ var WCGrid = new function() {
 			copy(_options, options);
 			settingColumns();
 			addTheIdColumn();
+			render();
+		};
+
+		var render = function() {
 			_grid = new Slick.Grid(containerSelector, rows, columns, _options);
 			_headerMenuPlugin = new Slick.Plugins.HeaderMenu({});
 			_headerMenuPlugin.onCommand.subscribe(menuCommandHandler);
@@ -398,7 +403,7 @@ var WCGrid = new function() {
 		};
 
 		var setColumnWidth = function(column) {
-			column.width = parseInt(column.width);
+			column.width = parseInt(column.width) || 250;
 		};
 
 		var setColumnResizable = function(column) {
@@ -464,11 +469,12 @@ var WCGrid = new function() {
 		};
 
 		this.addColumn = function(column, orderIndex) {
-			// TODO: corregir order!
+			// TODO: estar atento del ordenamiento de columnas. Testear!
 			reorderColumns(orderIndex);
 			settingColumn(column);
 			columns.splice(orderIndex, 0, column);
-			_grid.setColumns(columns);
+			render();
+			//_grid.setColumns(columns);
 		};
 
 		this.deleteColumn = function(columnId) {
@@ -476,14 +482,18 @@ var WCGrid = new function() {
 			_grid.setColumns(columns);
 		};
 
+		this.canDeleteColumn = function() {
+			return columns.length > 2;
+		};
+
 		this.setColumnStyle = setColumnStyle;
 
 		this.showTopPanel = function() {
-			_grid.showTopPanel();
+			//_grid.showTopPanel();
 		};
 
 		this.hideTopPanel = function() {
-			_grid.hideTopPanel();
+			//_grid.hideTopPanel();
 		};
 
 		this.addEventListener = function(eventName, callback) {
@@ -801,10 +811,17 @@ var ApplicationUI = function() {
 		});
 	};
 
-	var deleteField = function(orderIndex, fieldId) {
-		_transaction.deleteField(fieldId, function(data, status) {
-			_currentDataGrid.deleteColumn(fieldId);
-		});
+	var deleteColumn = function(orderIndex, fieldId) {
+		if (_currentDataGrid.canDeleteColumn()) {
+			if (confirm("Will lose all data associated with this column. Are you sure you want to proceed?")) {
+				_transaction.deleteField(fieldId, function(data, status) {
+					_currentDataGrid.deleteColumn(fieldId);
+				});
+			}
+		}
+		else {
+			alert("A sheet must have at least one column");
+		}
 	};
 
 	var setColumnStyle = function(fieldId) {
@@ -830,9 +847,7 @@ var ApplicationUI = function() {
 				showColumnCreationForm(orderIndex + 1);
 				break;
 			case WCGrid.MenuCommand.DeleteColumn:
-				if (confirm("Will lose all data associated with this column. Are you sure you want to proceed?")) {
-					deleteField(orderIndex, fieldId);
-				}
+				deleteColumn(orderIndex, fieldId);
 				break;
 			case WCGrid.MenuCommand.EditColumn:
 				alert("Edit command is not implemented");
@@ -937,15 +952,20 @@ var ColumnDialog = function() {
 	var _onSubmit = null;
 
 	var createColumn = function() {
-		if (_onSubmit) {
-			var formData = {};
-			formData.name = $("#column-name").val();
-			formData.type = $(".tmp-column-creator select").val();
-			formData.values = $(".tmp-column-creator textarea").val().replace(/\n/g, ",");
-			formData.defaultValue = $("#def-value").val();
-			_onSubmit(formData);
+		var formData = {};
+		formData.name = $("#column-name").val();
+		formData.type = $(".tmp-column-creator select").val();
+		formData.values = $(".tmp-column-creator textarea").val().replace(/\n/g, ",");
+		formData.defaultValue = $("#def-value").val();
+		if (formData.name && formData.type) {
+			if (_onSubmit) {
+				_onSubmit(formData);
+			}
+			$(".tmp-column-creator").css("display", "none");
 		}
-		$(".tmp-column-creator").css("display", "none");
+		else {
+			alert("Completá los dato loco!\n(name y value son obligatorios)");
+		}
 	};
 
 	this.showDialog = function(fieldTypes, onFinish) {
