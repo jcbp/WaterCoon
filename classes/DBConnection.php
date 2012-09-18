@@ -3,10 +3,6 @@
 include_once 'log4php/Logger.php';
 Logger::configure('xml/log4php_config.xml');
 
-function encodeItemsToUtf8(&$item, $key) {
-	$item = utf8_encode($item);
-}
-
 /**
  * Maneja la conección con la Base de Datos
  **/
@@ -49,18 +45,17 @@ class DBConnection {
 			while ($row = $result->fetch_assoc()) {
 				array_push($ret, $row);
 			}
-			array_walk_recursive($ret, 'encodeItemsToUtf8');
 			$result->free();
 		}
 		return $ret;
 	}
 
-	public function close() {
-		$this->connection->close();
+	public function escapeString($str) {
+		return $this->connection->real_escape_string($str);
 	}
 
-	function __destruct() {
-		@$this->connection->close();
+	public function close() {
+		$this->connection->close();
 	}
 }
 
