@@ -1,5 +1,6 @@
 <?php
 
+include 'classes/GlobalErrorHandler.php';
 include 'classes/Config.php';
 include 'classes/DBConnection.php';
 include 'classes/WebResponder.php';
@@ -13,8 +14,7 @@ class Auth {
 	private $password;
 	private $queryResult;
 
-	function __construct()
-	{
+	function __construct() {
 		$this->arguments = new AppArgs(AppArgs::GET);
 		$this->getResponder();
 
@@ -22,8 +22,7 @@ class Auth {
 			$this->responder->respond("Invalid username or password");
 		}
 
-		$this->normalizeStrings();
-		$this->query();
+		$this->performQuery();
 		$this->authenticate();
 	}
 
@@ -37,19 +36,19 @@ class Auth {
 		}
 	}
 
-	private function normalizeStrings() {
-		$this->username = $this->arguments->getVar('username'); 
-		$this->password = $this->arguments->getVar('password'); 
-		$this->username = stripslashes($this->username);
-		$this->password = stripslashes($this->password);
-		$this->username = mysql_real_escape_string($this->username);
-		$this->password = mysql_real_escape_string($this->password);
+	private function escapeStrings($conn) {
+		$this->username = $conn->escapeString($this->arguments->getVar('username')); 
+		$this->password = $conn->escapeString($this->arguments->getVar('password')); 
 	}
-	
-	private function query() {
-		$query = "call get_user_by_name('" . $this->username . "')";
+
+	private function buildQuery($conn) {
+		$this->escapeStrings($conn);
+		return "call get_user_by_name('" . $this->username . "')";
+	}
+
+	private function performQuery() {
 		$dbconn = new DBConnection(Config::DB_CONFIG, $this->responder);
-		$this->queryResult = $dbconn->query($query);
+		$this->queryResult = $dbconn->query($this->buildQuery($dbconn));
 		$dbconn->close();
 	}
 
