@@ -1,5 +1,6 @@
 <?php
 
+include 'classes/GlobalErrorHandler.php';
 include 'classes/Config.php';
 include 'classes/DBConnection.php';
 include 'classes/WebResponder.php';
@@ -25,8 +26,7 @@ class SignUp {
 			$this->responder->respond("Invalid username or password");
 		}
 
-		$this->normalizeStrings();
-		$this->query();
+		$this->performQuery();
 
 		$this->responder->respond("success");
 	}
@@ -41,25 +41,22 @@ class SignUp {
 		}
 	}
 
-	private function normalizeStrings() {
-		$this->username = $this->arguments->getVar('username'); 
-		$this->email = $this->arguments->getVar('email'); 
-		$this->password = $this->arguments->getVar('password'); 
-		$this->username = stripslashes($this->username);
-		$this->email = stripslashes($this->email);
-		$this->password = stripslashes($this->password);
-		$this->username = mysql_real_escape_string($this->username);
-		$this->email = mysql_real_escape_string($this->email);
-		$this->password = mysql_real_escape_string($this->password);
+	private function escapeStrings($conn) {
+		$this->username = $conn->escapeString($this->arguments->getVar('username')); 
+		$this->email = $conn->escapeString($this->arguments->getVar('email')); 
+		$this->password = $conn->escapeString($this->arguments->getVar('password')); 
+	}
 
+	private function buildQuery($conn) {
+		$this->escapeStrings($conn);
 		$this->password = crypt($this->password);
+		return "call insert_user('$this->username', '$this->password', '$this->email')";
 	}
 	
-	private function query() {
+	private function performQuery() {
 		try {
-			$query = "call insert_user('$this->username', '$this->password', '$this->email')";
 			$dbconn = new DBConnection(Config::DB_CONFIG, $this->responder);
-			$this->queryResult = $dbconn->query($query);
+			$this->queryResult = $dbconn->query($this->buildQuery($dbconn));
 			$dbconn->close();
 		}
 		catch (Exception $e) {
