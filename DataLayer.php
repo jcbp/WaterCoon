@@ -91,6 +91,7 @@ class DataLayer {
 		$sql = "call $this->routineName(";
 		foreach ($info->arguments->children() as $argument) {
 			$param = $this->getVar((string)$argument, str_replace("%param%", $argument, Config::MISSING_PARAMETER), (boolean)$argument['nullable']);
+			$param = utf8_decode($param);
 			$sql .= $this->addQuotesIfString($param) . ", ";
 		}
 		$sql = rtrim($sql, ", ");
