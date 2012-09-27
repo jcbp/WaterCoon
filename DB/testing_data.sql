@@ -3,7 +3,7 @@
 -- Base de datos: `domsurco_watercoon`
 --
 
-USE domsurco_watercoon;
+-- USE domsurco_watercoon;
 
 --
 -- Borrado de datos
@@ -33,14 +33,14 @@ WHERE project_id < 1000;
 DELETE FROM `project_history`
 WHERE project_history_id < 1000;
 
-DELETE FROM `sheet`
-WHERE sheet_id < 1000;
+DELETE FROM `list`
+WHERE list_id < 1000;
 
-DELETE FROM `user_sheet`
-WHERE sheet_id < 1000;
+DELETE FROM `user_list`
+WHERE list_id < 1000;
 
-DELETE FROM `sheet_history`
-WHERE sheet_history_id < 1000;
+DELETE FROM `list_history`
+WHERE list_history_id < 1000;
 
 DELETE FROM `user`
 WHERE user_id < 1000;
@@ -78,7 +78,7 @@ INSERT INTO `field_type` (`field_type_id`, `name`, `description`, `default_width
 -- Volcado de datos para la tabla `issue`
 --
 
-INSERT INTO `issue` (`issue_id`, `sheet_id`, `order_index`) VALUES
+INSERT INTO `issue` (`issue_id`, `list_id`, `order_index`) VALUES
 (1, 1, 1),
 (2, 1, 2);
 
@@ -86,7 +86,7 @@ INSERT INTO `issue` (`issue_id`, `sheet_id`, `order_index`) VALUES
 -- Volcado de datos para la tabla `field`
 --
 
-INSERT INTO `field` (`field_id`, `sheet_id`, `field_type_id`, `order_index`, `name`, `values`, `style`, `default_value`, `field_timestamp`) VALUES
+INSERT INTO `field` (`field_id`, `list_id`, `field_type_id`, `order_index`, `name`, `values`, `style`, `default_value`, `field_timestamp`) VALUES
 (1, 1, 1, 1, 'Title', NULL, NULL, NULL, NULL),
 (2, 1, 6, 2, 'Priority', 'Low,Normal,High', 'font-weight: bold;', 'Normal', NULL),
 (3, 1, 6, 3, 'Status', 'To Do,In Progress,On Hold,Done,Verified', 'text-decoration: underline;', 'To Do', NULL),
@@ -106,7 +106,7 @@ INSERT INTO `field` (`field_id`, `sheet_id`, `field_type_id`, `order_index`, `na
 -- Volcado de datos para la tabla `field_value`
 --
 
-INSERT INTO `field_value` (`field_value_id`, `sheet_id`, `field_id`, `user_id`, `value`, `issue_id`) VALUES
+INSERT INTO `field_value` (`field_value_id`, `list_id`, `field_id`, `user_id`, `value`, `issue_id`) VALUES
 (1, 1, 1, NULL, 'Tarea de prueba', 1),
 (2, 1, 2, NULL, 'Low', 1),
 (3, 1, 3, NULL, 'To Do', 1),
@@ -127,19 +127,19 @@ INSERT INTO `project` (`project_id`, `name`, `project_timestamp`) VALUES
 (2, 'watercoon Demos', NULL);
 
 --
--- Volcado de datos para la tabla `sheet`
+-- Volcado de datos para la tabla `list`
 --
 
-INSERT INTO `sheet` (`sheet_id`, `project_id`, `name`, `sheet_timestamp`) VALUES
+INSERT INTO `list` (`list_id`, `project_id`, `name`, `list_timestamp`) VALUES
 (1, 1, 'Task', NULL),
 (2, 2, 'Simple Todo', NULL),
 (3, 2, 'Complex Todo', NULL);
 
 --
--- Volcado de datos para la tabla `sheet`
+-- Volcado de datos para la tabla `list`
 --
 
-INSERT INTO `user_sheet` (`user_id`, `sheet_id`, `permission_type_id`) VALUES
+INSERT INTO `user_list` (`user_id`, `list_id`, `permission_type_id`) VALUES
 (1, 1, 1),
 (1, 2, 1),
 (1, 3, 1),
@@ -192,9 +192,9 @@ ALTER TABLE `issue` AUTO_INCREMENT = 1;
 ALTER TABLE `permission_type` AUTO_INCREMENT = 1;
 ALTER TABLE `project` AUTO_INCREMENT = 1;
 ALTER TABLE `project_history` AUTO_INCREMENT = 1;
-ALTER TABLE `sheet` AUTO_INCREMENT = 1;
-ALTER TABLE `user_sheet` AUTO_INCREMENT = 1;
-ALTER TABLE `sheet_history` AUTO_INCREMENT = 1;
+ALTER TABLE `list` AUTO_INCREMENT = 1;
+ALTER TABLE `user_list` AUTO_INCREMENT = 1;
+ALTER TABLE `list_history` AUTO_INCREMENT = 1;
 ALTER TABLE `user` AUTO_INCREMENT = 1;
 ALTER TABLE `user_project` AUTO_INCREMENT = 1;
 
