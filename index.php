@@ -1,3 +1,9 @@
+<?php
+session_start();
+if (!isset($_SESSION["wc_username"])) {
+	header("Location: login.php");
+}
+?>
 <!DOCTYPE HTML>
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -21,6 +27,18 @@
 	<script src="slickgrid/plugins/slick.headermenu.js"></script>
 	<script src="css-class-creator.js" type="text/javascript" charset="utf-8"></script>
 	<script src="watercoon.js" type="text/javascript" charset="utf-8"></script>
+	
+	
+	<!-- text markup -->
+	<link rel="stylesheet" type="text/css" href="text-markup/markitup/skins/simple/style.css"/>
+	<link rel="stylesheet" type="text/css" href="text-markup/markitup/sets/textile/style.css"/>
+	<link rel="stylesheet" type="text/css" href="text-markup/text-markup.css"/>
+	<script src="text-markup/text-markup.js" type="text/javascript" charset="utf-8"></script>
+	<script type="text/javascript" language="javascript" src="text-markup/textile-converter.js"></script>
+	<script type="text/javascript" src="text-markup/markitup/jquery.markitup.js"></script>
+	<script type="text/javascript" src="text-markup/markitup/sets/textile/set.js"></script>
+	
+
 
 	<link rel="stylesheet" href="slickgrid/slick.grid.css" type="text/css"/>
 	<link rel="stylesheet" href="slickgrid/css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css"/>
@@ -186,47 +204,41 @@
 		float: right;
 		margin-right: 35px;
 	}
+	
+	#tabs li {
+		background: url("slickgrid/images/arrow_right_spearmint.png") no-repeat center left;
+		padding: 0 0 0 14px;
+		list-style: none;
+		margin: 0;
+	}
 
 	</style>
 
 </head>
 <body>
+	
 	<?php
-	session_start();
-	if (isset($_SESSION["wc_username"])) {
 		echo "Bienvenido " . $_SESSION["wc_username"]["username"];
-	}
-	else {
-		header("Location: login.php");
-	}
 	?>
+	
 	<br />
 	<a href="#" onclick="logout('logout.php')">Logout</a>
 	<br />
 	<hr />
-	<div style="display: inline-block; width: 350px">
-		Project <select name="project" id="project"></select>
-		<input type="button" value="select" onclick="selectProject()">
-	</div>
-	<input id="project-name" type="text" placeholder="Project Name">
-	<input type="button" value="Create Project" onclick="createProject(this)" style="width: 90px">
-	<br />
-	<br />
-	<br />
 	<br />
 	<div style="display: inline-block; width: 350px">
-		Sheets:
+		Lists:
 	</div>
-	<input id="sheet-name" type="text" placeholder="Sheet Name">
-	<input type="button" value="Create Sheet" onclick="createSheet(this)" style="width: 90px"><br />
+	<input id="list-name" type="text" placeholder="List Name">
+	<input type="button" value="Create List" onclick="createList(this)" style="width: 90px"><br />
 	<ul id="tabs"></ul><br />
 
 	<div id="data-grid" style="height: 450px"></div>
 
-	<div id="sheet-user">
+	<div id="list-user">
 		<p>Current Users</p>
 		<div id="user-list"></div>
-		<p>Add a new user to this sheet</p>
+		<p>Add a new user to this list</p>
 		<div id="add-user">
 			<input placeholder="email" id="user-email">
 			<select id="permission-list"></select>
