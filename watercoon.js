@@ -104,6 +104,14 @@ var UserListDropDown = function(args) {
 			ComboBoxEditor.call(_this, args, keyValuePairs);
 		});
 	}
+
+	this.isValueChanged = function() {
+		return false;
+	};
+
+	this.serializeValue = function() {
+		return null;
+	};
 };
 UserListDropDown.transaction = null;
 
@@ -181,7 +189,7 @@ var Synchronizer = function(requirementIds) {
  * Administra la grilla de datos
  * @namespace
  */
-var WCGrid = new function() {
+var WCGrid = function() {
 	
 	this.DataConverter = function() {
 
@@ -252,8 +260,7 @@ var WCGrid = new function() {
 			validator: null
 		},
 		"longText": {
-			editor: Slick.Editors.LongText
-			//editor: AltLongTextEditor
+			editor: TextMarkup
 		},
 		"boolean": {
 			editor: Slick.Editors.Checkbox,
@@ -583,21 +590,15 @@ var TransactionManager = function(dataSource) {
 		}
 	};
 
-	this.getProject = function(callback) {
-		performTransaction("get_project_by_user_id", null, function(data, status) {
-			dispatchEvent("getProject", callback, data, status);
+	this.getList = function(callback) {
+		performTransaction("get_list", null, function(data, status) {
+			dispatchEvent("getList", callback, data, status);
 		});
 	};
 
-	this.getSheet = function(projectId, callback) {
-		performTransaction("get_sheet_by_project_id", { project_id: projectId }, function(data, status) {
-			dispatchEvent("getSheet", callback, data, status);
-		});
-	};
-
-	this.getSheetUser = function(sheetId, callback) {
-		performTransaction("get_user_by_sheet_id", { sheet_id: sheetId }, function(data, status) {
-			dispatchEvent("getSheetUser", callback, data, status);
+	this.getListUser = function(listId, callback) {
+		performTransaction("get_user_by_list_id", { list_id: listId }, function(data, status) {
+			dispatchEvent("getListUser", callback, data, status);
 		});
 	};
 
@@ -613,21 +614,21 @@ var TransactionManager = function(dataSource) {
 		});
 	};
 
-	this.getSheetPermission = function(sheetId, callback) {
-		performTransaction("get_sheet_permission", { sheet_id: sheetId }, function(data, status) {
-			dispatchEvent("getSheetPermission", callback, data, status);
+	this.getListPermission = function(listId, callback) {
+		performTransaction("get_list_permission", { list_id: listId }, function(data, status) {
+			dispatchEvent("getListPermission", callback, data, status);
 		});
 	};
 
-	this.getSheetData = function(sheetId, callback) {
+	this.getListData = function(listId, callback) {
 		var synchronizer = new Synchronizer(["column", "row"]);
 		synchronizer.notify(function(data, status) {
-			dispatchEvent("getSheetData", callback, data, status);
+			dispatchEvent("getListData", callback, data, status);
 		});
-		performTransaction("get_field_by_sheet_id", { sheet_id: sheetId }, function(data, status) {
+		performTransaction("get_field_by_list_id", { list_id: listId }, function(data, status) {
 			synchronizer.commit("column", data, status);
 		});
-		performTransaction("get_field_value_by_sheet_id", { sheet_id: sheetId }, function(data, status) {
+		performTransaction("get_field_value_by_list_id", { list_id: listId }, function(data, status) {
 			synchronizer.commit("row", data, status);
 		});
 	};
@@ -649,9 +650,9 @@ var TransactionManager = function(dataSource) {
 		});
 	};
 
-	this.insertField = function(sheetId, fieldTypeId, orderIndex, name, values, defaultValues, callback) {
+	this.insertField = function(listId, fieldTypeId, orderIndex, name, values, defaultValues, callback) {
 		performTransaction("insert_field_with_order_index", {
-			sheet_id: sheetId,
+			list_id: listId,
 			field_type_id: fieldTypeId,
 			order_index: orderIndex,
 			name: name,
@@ -677,32 +678,26 @@ var TransactionManager = function(dataSource) {
 		});
 	};
 
-	this.insertProject = function(name, callback) {
-		performTransaction("insert_project_with_user", { name: name }, function(data, status) {
-			dispatchEvent("insertProject", callback, data, status);
-		});
-	};
-
-	this.insertSheet = function(projectId, name, callback) {
-		performTransaction("insert_sheet_with_user", {
-			project_id: projectId,
-			name: name
+	this.insertList = function(name, description, callback) {
+		performTransaction("insert_list_with_user", {
+			name: name,
+			description: description
 		}, function(data, status) {
-			dispatchEvent("insertSheet", callback, data, status);
+			dispatchEvent("insertList", callback, data, status);
 		});
 	};
 
-	this.insertSheetUser = function(sheetId, email, permissionTypeId, callback) {
-		performTransaction("insert_user_sheet_by_user_email", {
-			sheet_id: sheetId,
+	this.insertListUser = function(listId, email, permissionTypeId, callback) {
+		performTransaction("insert_user_list_by_user_email", {
+			list_id: listId,
 			email: email,
 			permission_type_id: permissionTypeId
 		}, function(data, status) {
-			dispatchEvent("insertSheetUser", callback, data, status);
+			dispatchEvent("insertListUser", callback, data, status);
 		});
 	};
 
-	this.updateFieldValue = function(fieldValueId, sheetId, fieldId, userId, value, issueId, callback) {
+	this.updateFieldValue = function(fieldValueId, listId, fieldId, userId, value, issueId, callback) {
 		if (fieldValueId) {
 			performTransaction("update_field_value", {
 				field_value_id: fieldValueId,
@@ -715,7 +710,7 @@ var TransactionManager = function(dataSource) {
 		else {
 			performTransaction("insert_field_value", {
 				field_value_id: 0,
-				sheet_id: sheetId,
+				list_id: listId,
 				field_id: fieldId,
 				user_id: userId,
 				value: value,
@@ -747,8 +742,7 @@ var ApplicationUI = function() {
 	var _transaction = new TransactionManager(_dataSource);
 	var _converter = new WCGrid.DataConverter();
 	var _currentPermission = Permission.Watcher;
-	var _currentProject = null;
-	var _currentSheet = null;
+	var _currentList = null;
 	var _currentDataGrid = null;
 
 	var _columnDialog = new ColumnDialog();
@@ -764,9 +758,9 @@ var ApplicationUI = function() {
 
 		$("#add-user-button").on("click", function() {
 			var email = $("#user-email").val();
-			if (_currentSheet && email) {
-				_transaction.insertSheetUser(_currentSheet, email, $("#permission-list").val(), function(data, status) {
-					showSheetUser(_currentSheet);
+			if (_currentList && email) {
+				_transaction.insertListUser(_currentList, email, $("#permission-list").val(), function(data, status) {
+					showListUser(_currentList);
 				});
 			}
 		});
@@ -780,12 +774,12 @@ var ApplicationUI = function() {
 		$("#project").append(new Option(name, id));
 	};
 
-	var addSheet = function(id, name) {
+	var addList = function(id, name) {
 		new Tab(id, name);
 	};
 
 	var updateFieldValue = function(issueId, fieldId, fieldValueId, userId, value) {
-		_transaction.updateFieldValue(fieldValueId, _currentSheet, fieldId, userId, value, issueId);
+		_transaction.updateFieldValue(fieldValueId, _currentList, fieldId, userId, value, issueId);
 	};
 
 	var createIssue = function(orderIndex, fieldId, userId, value) {
@@ -796,7 +790,7 @@ var ApplicationUI = function() {
 	};
 
 	var createColumn = function(orderIndex, formData) {
-		_transaction.insertField(_currentSheet, formData.type, orderIndex, formData.name, formData.values, formData.defaultValue, function(data, status) {
+		_transaction.insertField(_currentList, formData.type, orderIndex, formData.name, formData.values, formData.defaultValue, function(data, status) {
 			_currentDataGrid.addColumn(data[0], orderIndex);
 			_currentDataGrid.hideTopPanel();
 		});
@@ -820,7 +814,7 @@ var ApplicationUI = function() {
 			}
 		}
 		else {
-			alert("A sheet must have at least one column");
+			alert("A list must have at least one column");
 		}
 	};
 
@@ -861,9 +855,9 @@ var ApplicationUI = function() {
 		}
 	};
 
-	var showSheetUser = function(sheetId) {
+	var showListUser = function(listId) {
 		var html = "<ul>";
-		_transaction.getSheetUser(sheetId, function(data, status) {
+		_transaction.getListUser(listId, function(data, status) {
 			for (var i = 0; i < data.length; i++) {
 				var user = "<li>" + (data[i].username || (data[i].email + " (unconfirmed account)")) + "</li>";
 				$("#user-list")[0].innerHTML += user;
@@ -879,65 +873,46 @@ var ApplicationUI = function() {
 			editable = true;
 		}
 		else {
-			alert("You have not permission for edit this sheet. It will be shown as Read-Only");
+			alert("You have not permission for edit this list. It will be shown as Read-Only");
 		}
 		return editable;
 	};
 
-	this.loadSheetData = function(sheetId) {
-		var sync = new Synchronizer(["sheetData", "sheetPermission"]);
+	this.loadListData = function(listId) {
+		var sync = new Synchronizer(["listData", "listPermission"]);
 		sync.notify(function(result) {
-			var columns = _converter.convertColumnData(result.sheetData.column);
-			var rows = _converter.convertRowData(result.sheetData.row);
-			var options = { editable: isEditable(result.sheetPermission[0]) };
+			var columns = _converter.convertColumnData(result.listData.column);
+			var rows = _converter.convertRowData(result.listData.row);
+			var options = { editable: isEditable(result.listPermission[0]) };
 			_currentDataGrid = new WCGrid.DataGrid(columns, rows, "#data-grid", options);
 			_currentDataGrid.addEventListener("headerMenuCommand", headerMenuHandler);
 			_currentDataGrid.addEventListener("updateCell", updateFieldValue);
 			_currentDataGrid.addEventListener("newRow", createIssue);
-			_currentSheet = sheetId;
+			_currentList = listId;
 		});
-		_transaction.getSheetPermission(sheetId, function(data, status) {
+		_transaction.getListPermission(listId, function(data, status) {
 			_currentPermission = data[0].permission_type_id;
-			sync.commit("sheetPermission", data);
+			sync.commit("listPermission", data);
 		});
-		_transaction.getSheetData(sheetId, function(data, status) {
-			sync.commit("sheetData", data);
+		_transaction.getListData(listId, function(data, status) {
+			sync.commit("listData", data);
 		});
-		showSheetUser(sheetId);
+		showListUser(listId);
 	};
 
-	this.loadProjects = function() {
-		_transaction.getProject(function(data, status) {
+	this.loadList = function() {
+		_transaction.getList(function(data, status) {
 			for (var i = 0; i < data.length; i++) {
-				addProject(data[i].project_id, data[i].name);
+				var tag = data[i].tag_name? " <span style='color: #eaa748'>[" + data[i].tag_name + "]</span>": "";
+				addList(data[i].list_id, data[i].name + tag);
 			}
 		});
 	};
 
-	this.loadProjectSheets = function() {
-		_transaction.getSheet(_currentProject, function(data, status) {
-			for (var i = 0; i < data.length; i++) {
-				addSheet(data[i].sheet_id, data[i].name);
-			}
+	this.createList = function(name) {
+		_transaction.insertList(name, "descripcion default", function(data, status) {
+			addList(data[0].list_id, data[0].name);
 		});
-	};
-
-	this.createProject = function(name) {
-		_transaction.insertProject(name, function(data, status) {
-			addProject(data[0].project_id, data[0].name);
-		});
-	};
-
-	this.createSheet = function(name) {
-		if (_currentProject) {
-			_transaction.insertSheet(_currentProject, name, function(data, status) {
-				addSheet(data[0].sheet_id, data[0].name);
-			});
-		}
-	};
-
-	this.selectProject = function(id) {
-		_currentProject = id;
 	};
 
 	this.addEventListener = function(eventName, callback) {
@@ -985,13 +960,13 @@ var ColumnDialog = function() {
 	});
 };
 
-var Tab = function(sheetId, title) {
+var Tab = function(listId, title) {
 	var tabs = document.getElementById("tabs");
 	var tab = document.createElement("li");
 	tab.innerHTML = title;
 	tab.style.cursor = "pointer";
 	tab.onclick = function() {
-		appUI.loadSheetData(sheetId);
+		appUI.loadListData(listId);
 	};
 	tabs.appendChild(tab);
 };
@@ -1002,7 +977,7 @@ var selectProject = function() {
 	selectedProject = $("#project").val();
 
 	appUI.selectProject(selectedProject);
-	appUI.loadProjectSheets();
+	appUI.loadProjectLists();
 };
 
 var createProject = function(obj) {
@@ -1018,15 +993,15 @@ var createProject = function(obj) {
 	}
 };
 
-var createSheet = function(obj) {
-	var sheetInput = document.getElementById("sheet-name");
-	if (sheetInput.value) {
-		appUI.addEventListener("insertSheet", function() {
+var createList = function(obj) {
+	var listInput = document.getElementById("list-name");
+	if (listInput.value) {
+		appUI.addEventListener("insertList", function() {
 			obj.removeAttribute("disabled");
 		});
-		appUI.createSheet(sheetInput.value);
+		appUI.createList(listInput.value);
 
-		sheetInput.value = "";
+		listInput.value = "";
 		obj.disabled = "disabled";
 	}
 };
@@ -1044,8 +1019,10 @@ var logout = function(src) {
 var appUI;
 
 $(document).ready(function() {
+	WCGrid = new WCGrid();
+
 	appUI = new ApplicationUI();
-	appUI.loadProjects();
+	appUI.loadList();
 
 	
 	//columnDialog = new ColumnDialog();
