@@ -5,48 +5,6 @@
 
 -- USE domsurco_watercoon;
 
---
--- Borrado de datos
---
-
-DELETE FROM `field`
-WHERE field_id < 1000;
-
-DELETE FROM `field_history`
-WHERE field_history_id < 1000;
-
-DELETE FROM `field_type`
-WHERE field_type_id < 1000;
-
-DELETE FROM `field_value`
-WHERE field_value_id < 1000;
-
-DELETE FROM `issue`
-WHERE issue_id < 1000;
-
-DELETE FROM `permission_type`
-WHERE permission_type_id < 1000;
-
-DELETE FROM `project`
-WHERE project_id < 1000;
-
-DELETE FROM `project_history`
-WHERE project_history_id < 1000;
-
-DELETE FROM `list`
-WHERE list_id < 1000;
-
-DELETE FROM `user_list`
-WHERE list_id < 1000;
-
-DELETE FROM `list_history`
-WHERE list_history_id < 1000;
-
-DELETE FROM `user`
-WHERE user_id < 1000;
-
-DELETE FROM `user_project`
-WHERE user_id < 1000;
 
 --
 -- Inserción de datos
@@ -62,25 +20,20 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8 */;
 
 --
--- Volcado de datos para la tabla `field_type`
---
-
-INSERT INTO `field_type` (`field_type_id`, `name`, `description`, `default_width`) VALUES
-(1, 'text', 'Caracteres y Números', 300),
-(2, 'longText', 'Caracteres y Números (multi-línea)', 250),
-(3, 'boolean', 'Verdadero o Falso', 60),
-(4, 'date', 'Fecha', 100),
-(5, 'user', 'Lista de Usuarios', 200),
-(6, 'customList', 'Lista de Valores Personalizados', 250),
-(7, 'percent', 'Valor en Porcentajes', 100);
-
---
 -- Volcado de datos para la tabla `issue`
 --
 
-INSERT INTO `issue` (`issue_id`, `list_id`, `order_index`) VALUES
-(1, 1, 1),
-(2, 1, 2);
+INSERT INTO `issue` (`issue_id`, `order_index`) VALUES
+(1, 1),
+(2, 2);
+
+--
+-- Volcado de datos para la tabla `issue_list`
+--
+
+INSERT INTO `issue_list` (`issue_id`, `list_id`) VALUES
+(1, 1),
+(2, 1);
 
 --
 -- Volcado de datos para la tabla `field`
@@ -119,24 +72,40 @@ INSERT INTO `field_value` (`field_value_id`, `list_id`, `field_id`, `user_id`, `
 (10, 1, 5, 1, NULL, 2);
 
 --
--- Volcado de datos para la tabla `project`
+-- Volcado de datos para la tabla `tag`
 --
 
-INSERT INTO `project` (`project_id`, `name`, `project_timestamp`) VALUES
+INSERT INTO `tag` (`tag_id`, `name`, `tag_timestamp`) VALUES
 (1, 'watercoon', NULL),
-(2, 'watercoon Demos', NULL);
+(2, 'watercoon Demos', NULL),
+(3, 'watercoon2', NULL),
+(4, 'test1', NULL),
+(5, 'test2', NULL);
 
 --
 -- Volcado de datos para la tabla `list`
 --
 
-INSERT INTO `list` (`list_id`, `project_id`, `name`, `list_timestamp`) VALUES
-(1, 1, 'Task', NULL),
-(2, 2, 'Simple Todo', NULL),
-(3, 2, 'Complex Todo', NULL);
+INSERT INTO `list` (`list_id`, `name`, `description`, `is_template`, `list_timestamp`) VALUES
+(1, 'Task', 'Descripción para la lista de tareas', 0, NULL),
+(2, 'Simple Todo', 'Descripción para la lista de Demos: Simple Todo', 0, NULL),
+(3, 'Complex Todo', 'Descripción para la lista de Demos: Complex Todo', 0, NULL);
 
 --
--- Volcado de datos para la tabla `list`
+-- Volcado de datos para la tabla `tag_user_list`
+--
+
+INSERT INTO `tag_user_list` (`tag_id`, `user_id`, `list_id`) VALUES
+(1, 1, 1),
+(2, 1, 2),
+(2, 1, 3),
+(3, 1, 1),
+(3, 2, 1),
+(5, 4, 1),
+(5, 6, 1);
+
+--
+-- Volcado de datos para la tabla `user_list`
 --
 
 INSERT INTO `user_list` (`user_id`, `list_id`, `permission_type_id`) VALUES
@@ -158,45 +127,6 @@ INSERT INTO `user` (`user_id`, `username`, `password`, `email`, `hash`, `user_ti
 (4, NULL, NULL, 'marta@mail.com', NULL, NULL),
 (5, NULL, NULL, 'mirta@mail.com', NULL, NULL),
 (6, 'coco', '$1$Fqucq4fO$abIu3/kAfFQ7Cz.WyV4Ht0', 'coco@mail.com', NULL, NULL);
-
---
--- Volcado de datos para la tabla `user_project`
---
-
-INSERT INTO `user_project` (`user_id`, `project_id`, `permission_type_id`) VALUES
-(1, 1, 1),
-(1, 2, 1),
-(2, 1, 1),
-(4, 1, 1),
-(6, 1, 1);
-
---
--- Volcado de datos para la tabla `permission_type`
---
-
-INSERT INTO `permission_type` (`permission_type_id`, `name`) VALUES
-(1, 'Administrator'),
-(2, 'Editor'),
-(3, 'Watcher');
-
-
---
--- Reset AUTO_INCREMENT index
---
-
-ALTER TABLE `field` AUTO_INCREMENT = 1;
-ALTER TABLE `field_history` AUTO_INCREMENT = 1;
-ALTER TABLE `field_type` AUTO_INCREMENT = 1;
-ALTER TABLE `field_value` AUTO_INCREMENT = 1;
-ALTER TABLE `issue` AUTO_INCREMENT = 1;
-ALTER TABLE `permission_type` AUTO_INCREMENT = 1;
-ALTER TABLE `project` AUTO_INCREMENT = 1;
-ALTER TABLE `project_history` AUTO_INCREMENT = 1;
-ALTER TABLE `list` AUTO_INCREMENT = 1;
-ALTER TABLE `user_list` AUTO_INCREMENT = 1;
-ALTER TABLE `list_history` AUTO_INCREMENT = 1;
-ALTER TABLE `user` AUTO_INCREMENT = 1;
-ALTER TABLE `user_project` AUTO_INCREMENT = 1;
 
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

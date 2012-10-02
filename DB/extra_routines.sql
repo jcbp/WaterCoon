@@ -46,7 +46,7 @@ END $$
 DROP PROCEDURE IF EXISTS `insert_issue_and_field_value` $$
 -- Inserta un nuevo Issue, establece el valor para la celda del campo especificado (field_id) y
 -- crea todos los registros para el Issue con el valor default (field.default_value) si lo tuviese
-CREATE PROCEDURE `insert_issue_and_field_value` (IN user_id INT(11), IN order_index TINYINT, IN field_id INT(11), IN user_id_as_value INT(11), IN value TEXT)
+CREATE PROCEDURE `insert_issue_and_field_value` (IN user_id INT(11), IN order_index TINYINT, IN field_id INT(11), IN user_id_as_value INT(11), IN `value` TEXT)
 BEGIN
     DECLARE done INT DEFAULT 0;
     DECLARE tmp_default_value VARCHAR(256);
@@ -54,6 +54,7 @@ BEGIN
     DECLARE issue_id INT(11);
     DECLARE permission_id SMALLINT;
 
+	-- Se obtiene el id de la lista a partir del field_id especificado
     DECLARE list_id INT(11) DEFAULT (SELECT list_id
     FROM field AS f
     WHERE f.field_id = field_id);
@@ -70,10 +71,14 @@ BEGIN
 
     -- Se requiere al menos permisos de Editor(2)
     IF permission_id <= 2 THEN
-        INSERT INTO issue (list_id, order_index)
-            VALUES (list_id, order_index);
+        INSERT INTO issue (order_index)
+            VALUES (order_index);
 
         SET issue_id = (SELECT LAST_INSERT_ID());
+
+		-- Se asocia el issue creado con la lista correspondiente al field_id especificado
+		INSERT INTO issue_list (issue_id, list_id)
+			VALUES (issue_id, list_id);
 
         INSERT INTO field_value (list_id, field_id, value, issue_id)
             VALUES (list_id, field_id, value, issue_id);
@@ -111,55 +116,27 @@ BEGIN
 END $$
 
 
-DROP PROCEDURE IF EXISTS `get_project_by_user_id` $$
--- Devuelve los proyectos para un usuario dado
-CREATE PROCEDURE `get_project_by_user_id` (IN user_id INT(11))
+DROP PROCEDURE IF EXISTS `get_list` $$
+-- Devuelve las listas con sus respectivas etiquetas separadas por coma
+CREATE PROCEDURE `get_list` (IN user_id INT(11))
 BEGIN
-    SELECT p.project_id, p.name, p.project_timestamp FROM project AS p
-        INNER JOIN user_project AS up ON p.project_id = up.project_id
-    WHERE up.user_id = user_id
-    ORDER BY p.project_id ASC;
-END $$
-
-
-DROP PROCEDURE IF EXISTS `get_list_by_project_id` $$
--- Devuelve las hojas de un proyecto dado
-CREATE PROCEDURE `get_list_by_project_id` (IN user_id INT(11), IN project_id INT(11))
-BEGIN
-    SELECT * FROM list AS s
-        INNER JOIN user_list AS us ON s.list_id = us.list_id
-    WHERE s.project_id = project_id AND us.user_id = user_id
-    ORDER BY s.list_id ASC;
-END $$
-
-
-DROP PROCEDURE IF EXISTS `insert_project_with_user` $$
--- Crea un nuevo proyecto y lo asocia con el usuario que lo crea, con el mayor de los privilegios (1)
-CREATE PROCEDURE `insert_project_with_user` (IN name VARCHAR(64), IN user_id INT(11))
-BEGIN
-    DECLARE project_id INT(11);
-
-    INSERT INTO project (`name`, `project_timestamp`)
-    VALUES (`name`, NULL);
-
-    SET project_id = (SELECT LAST_INSERT_ID());
-
-    INSERT INTO user_project (`user_id`, `project_id`, `permission_type_id`)
-    VALUES (user_id, project_id, 1);
-    
-    SELECT * FROM project AS p
-    WHERE p.project_id = project_id;
+    SELECT l.list_id, l.`name`, description, permission_type_id, GROUP_CONCAT(t.`name` SEPARATOR ',') 'tag_name', list_timestamp FROM `list` AS l
+        INNER JOIN user_list AS ul ON l.list_id = ul.list_id
+		LEFT JOIN tag_user_list AS tul ON tul.user_id = user_id AND tul.list_id = l.list_id
+		LEFT JOIN tag AS t ON t.tag_id = tul.tag_id
+    WHERE ul.user_id = user_id
+	GROUP BY l.list_id;
 END $$
 
 
 DROP PROCEDURE IF EXISTS `insert_list_with_user` $$
--- Crea una nueva hoja y la asocia con el usuario que la crea, con el mayor de los privilegios (1)
-CREATE PROCEDURE `insert_list_with_user` (IN project_id INT(11), IN name VARCHAR(64), IN user_id INT(11))
+-- Crea una nueva lista y la asocia con el usuario que la crea, con el mayor de los privilegios (1)
+CREATE PROCEDURE `insert_list_with_user` (IN `name` VARCHAR(64), IN description VARCHAR(512), IN user_id INT(11))
 BEGIN
     DECLARE list_id INT(11);
 
-    INSERT INTO list (`project_id`, `name`)
-    VALUES (`project_id`, `name`);
+    INSERT INTO list (`name`, description)
+    VALUES (`name`, description);
 
     SET list_id = (SELECT LAST_INSERT_ID());
 
@@ -173,8 +150,8 @@ BEGIN
     (list_id, 1, 2, 'Column 2'),
     (list_id, 1, 3, 'Column 3');
 
-    SELECT * FROM list AS s
-    WHERE s.list_id = list_id;
+    SELECT l.list_id, l.`name`, l.description, l.list_timestamp FROM list AS l
+    WHERE l.list_id = list_id;
 END $$
 
 
@@ -205,20 +182,16 @@ DROP PROCEDURE IF EXISTS `insert_user_list_by_user_email` $$
 -- Asocia un usuario a una hoja a partir del email
 -- Si el usuario no existe se lo registra con el email especificado
 -- *TODO*: AGREGAR VALIDACION DE PERMISOS
+-- *TODO*: evaluar si conviene agregar en este mismo SP para que se devuelvan todos los usuarios de la lista, para evitar una llamada extra
 CREATE PROCEDURE `insert_user_list_by_user_email` (IN list_id INT(11), IN email VARCHAR(256), IN permission_type_id TINYINT)
 BEGIN
     DECLARE var_user_id INT(11);
-    DECLARE var_project_id INT(11);
     
     -- Se obtiene el user_id a partir del email
     SET var_user_id = (SELECT user_id
         FROM user AS u
         WHERE u.email = email
         LIMIT 1);
-
-    -- Se obtiene el project_id a partir del list_id
-    SET var_project_id = (SELECT project_id FROM list AS s
-        WHERE s.list_id = list_id);
 
     -- Si el usuario no existe se lo registra solo con el email
     -- Cuando se dé de alta el usuario se utiliza este mismo id para conservar las asociaciones previas
@@ -239,14 +212,6 @@ BEGIN
         -- Sino, se asocia el usuario a la hoja, con los permisos especificados
         INSERT IGNORE INTO user_list (user_id, list_id, permission_type_id)
         VALUES (var_user_id, list_id, permission_type_id);
-    END IF;
-
-    -- Si el usuario no esta asociado al proyecto al cual pertenece
-    IF NOT EXISTS (SELECT * FROM user_project AS up
-               WHERE up.user_id = var_user_id AND up.project_id = var_project_id) THEN
-        -- Se asocia el usuario al proyecto con permiso de watcher(3)
-        INSERT INTO user_project (user_id, project_id, permission_type_id)
-        VALUES (var_user_id, var_project_id, 3);
     END IF;
 END $$
 
@@ -298,7 +263,7 @@ END $$
 
 
 DROP PROCEDURE IF EXISTS `get_user_list` $$
--- Para un usuario dato, devuelve todos los usuarios con los que comparte alguna hoja
+-- Para un usuario dado, devuelve todos los usuarios con los que comparte alguna hoja
 -- *TODO*: refactorizar este SP
 CREATE PROCEDURE `get_user_list` (IN user_id INT(11))
 BEGIN
@@ -323,32 +288,5 @@ BEGIN
     END IF;
 END $$
 
-
--- *TODO*: ARMAR STORED PARA TRAER USUARIOS POR list_id, PARA USAR EN LOS field_type DE USUARIOS (5)
-
-
--- DROP PROCEDURE IF EXISTS `insert_field_value_without_list_id` $$
--- 
--- CREATE PROCEDURE `insert_field_value_without_list_id` (IN issue_id INT(11), IN field_id INT(11), IN user_id INT(11), IN value TEXT)
--- BEGIN
---     DECLARE list_id INT(11) DEFAULT (SELECT list_id
---     FROM issue AS i
---     WHERE i.issue_id = issue_id);
--- 
---     INSERT INTO field_value (`list_id`, `field_id`, `user_id`, `value`, `issue_id`)
---     VALUES (list_id, field_id, user_id, value, issue_id);
--- END $$
-
-
--- DROP PROCEDURE IF EXISTS `get_issue_field_value_by_list_id` $$
--- 
--- CREATE PROCEDURE `get_issue_field_value_by_list_id` (IN list_id INT(11))
--- BEGIN
---     SELECT field_value_id, field_id, i.order_index, user_id, value, fv.issue_id
---     FROM field_value AS fv
---         INNER JOIN list AS s ON fv.list_id = s.list_id
---         INNER JOIN issue AS i ON fv.issue_id = i.issue_id
---     WHERE fv.list_id = list_id;
--- END $$
 
 DELIMITER ;

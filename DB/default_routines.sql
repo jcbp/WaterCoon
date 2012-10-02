@@ -1,4 +1,3 @@
-
 DELIMITER $$
 
 -- TABLE field
@@ -11,10 +10,10 @@ BEGIN
       ORDER BY field_id;
 END $$
 
-
+            
 DROP PROCEDURE IF EXISTS insert_field $$
 
-CREATE PROCEDURE insert_field(IN field_id int(11), IN list_id int(11), IN field_type_id int(3), IN order_index int(3), IN `name` varchar(128), IN `values` varchar(256), IN style varchar(256), IN width int(3), IN default_value blob(65535), IN field_timestamp timestamp)
+CREATE PROCEDURE insert_field(IN field_id int(11), IN list_id int(11), IN field_type_id int(3), IN order_index int(3), IN name varchar(128), IN values varchar(256), IN style varchar(256), IN width int(3), IN default_value blob(65535), IN field_timestamp timestamp)
 BEGIN
       IF field_id<=0 OR ISNULL(field_id) THEN
             INSERT INTO field (`list_id`, `field_type_id`, `order_index`, `name`, `values`, `style`, `width`, `default_value`, `field_timestamp`)
@@ -102,11 +101,33 @@ END $$
             
 DROP PROCEDURE IF EXISTS insert_issue $$
 
-CREATE PROCEDURE insert_issue(IN issue_id int(11), IN list_id int(11), IN order_index int(8))
+CREATE PROCEDURE insert_issue(IN issue_id int(11), IN order_index int(8))
 BEGIN
       IF issue_id<=0 OR ISNULL(issue_id) THEN
-            INSERT INTO issue (`list_id`, `order_index`)
-            VALUES (`list_id`, `order_index`);
+            INSERT INTO issue (`order_index`)
+            VALUES (`order_index`);
+      END IF;
+END $$
+
+            
+-- TABLE issue_list
+
+DROP PROCEDURE IF EXISTS get_issue_list $$
+
+CREATE PROCEDURE get_issue_list()
+BEGIN
+      SELECT * FROM issue_list
+      ORDER BY issue_list_id;
+END $$
+
+            
+DROP PROCEDURE IF EXISTS insert_issue_list $$
+
+CREATE PROCEDURE insert_issue_list(IN issue_id int(11), IN list_id int(11))
+BEGIN
+      IF issue_id<=0 OR ISNULL(issue_id) THEN
+            INSERT INTO issue_list (`list_id`)
+            VALUES (`list_id`);
       END IF;
 END $$
 
@@ -124,11 +145,11 @@ END $$
             
 DROP PROCEDURE IF EXISTS insert_list $$
 
-CREATE PROCEDURE insert_list(IN list_id int(11), IN project_id int(11), IN name varchar(128), IN list_timestamp timestamp, IN description varchar(512), IN is_template int(1))
+CREATE PROCEDURE insert_list(IN list_id int(11), IN name varchar(128), IN description varchar(512), IN is_template int(1), IN list_timestamp timestamp)
 BEGIN
       IF list_id<=0 OR ISNULL(list_id) THEN
-            INSERT INTO list (`project_id`, `name`, `list_timestamp`, `description`, `is_template`)
-            VALUES (`project_id`, `name`, `list_timestamp`, `description`, `is_template`);
+            INSERT INTO list (`name`, `description`, `is_template`, `list_timestamp`)
+            VALUES (`name`, `description`, `is_template`, `list_timestamp`);
       END IF;
 END $$
 
@@ -177,46 +198,68 @@ BEGIN
 END $$
 
             
--- TABLE project
+-- TABLE tag
 
-DROP PROCEDURE IF EXISTS get_project $$
+DROP PROCEDURE IF EXISTS get_tag $$
 
-CREATE PROCEDURE get_project()
+CREATE PROCEDURE get_tag()
 BEGIN
-      SELECT * FROM project
-      ORDER BY project_id;
+      SELECT * FROM tag
+      ORDER BY tag_id;
 END $$
 
             
-DROP PROCEDURE IF EXISTS insert_project $$
+DROP PROCEDURE IF EXISTS insert_tag $$
 
-CREATE PROCEDURE insert_project(IN project_id int(11), IN name varchar(64), IN project_timestamp timestamp, IN description varchar(512))
+CREATE PROCEDURE insert_tag(IN tag_id int(11), IN name varchar(64), IN tag_timestamp timestamp)
 BEGIN
-      IF project_id<=0 OR ISNULL(project_id) THEN
-            INSERT INTO project (`name`, `project_timestamp`, `description`)
-            VALUES (`name`, `project_timestamp`, `description`);
+      IF tag_id<=0 OR ISNULL(tag_id) THEN
+            INSERT INTO tag (`name`, `tag_timestamp`)
+            VALUES (`name`, `tag_timestamp`);
       END IF;
 END $$
 
             
--- TABLE project_history
+-- TABLE tag_history
 
-DROP PROCEDURE IF EXISTS get_project_history $$
+DROP PROCEDURE IF EXISTS get_tag_history $$
 
-CREATE PROCEDURE get_project_history()
+CREATE PROCEDURE get_tag_history()
 BEGIN
-      SELECT * FROM project_history
-      ORDER BY project_history_id;
+      SELECT * FROM tag_history
+      ORDER BY tag_history_id;
 END $$
 
             
-DROP PROCEDURE IF EXISTS insert_project_history $$
+DROP PROCEDURE IF EXISTS insert_tag_history $$
 
-CREATE PROCEDURE insert_project_history(IN project_history_id int(11), IN username varchar(40), IN operation varchar(3), IN project_history_timestamp timestamp)
+CREATE PROCEDURE insert_tag_history(IN tag_history_id int(11), IN username varchar(40), IN operation varchar(3), IN tag_history_timestamp timestamp)
 BEGIN
-      IF project_history_id<=0 OR ISNULL(project_history_id) THEN
-            INSERT INTO project_history (`username`, `operation`, `project_history_timestamp`)
-            VALUES (`username`, `operation`, `project_history_timestamp`);
+      IF tag_history_id<=0 OR ISNULL(tag_history_id) THEN
+            INSERT INTO tag_history (`username`, `operation`, `tag_history_timestamp`)
+            VALUES (`username`, `operation`, `tag_history_timestamp`);
+      END IF;
+END $$
+
+            
+-- TABLE tag_user_list
+
+DROP PROCEDURE IF EXISTS get_tag_user_list $$
+
+CREATE PROCEDURE get_tag_user_list()
+BEGIN
+      SELECT * FROM tag_user_list
+      ORDER BY tag_user_list_id;
+END $$
+
+            
+DROP PROCEDURE IF EXISTS insert_tag_user_list $$
+
+CREATE PROCEDURE insert_tag_user_list(IN tag_id int(11), IN user_id int(11), IN list_id int(11))
+BEGIN
+      IF tag_id<=0 OR ISNULL(tag_id) THEN
+            INSERT INTO tag_user_list (`user_id`, `list_id`)
+            VALUES (`user_id`, `list_id`);
       END IF;
 END $$
 
@@ -265,26 +308,5 @@ BEGIN
 END $$
 
             
--- TABLE user_project
-
-DROP PROCEDURE IF EXISTS get_user_project $$
-
-CREATE PROCEDURE get_user_project()
-BEGIN
-      SELECT * FROM user_project
-      ORDER BY user_project_id;
-END $$
-
-            
-DROP PROCEDURE IF EXISTS insert_user_project $$
-
-CREATE PROCEDURE insert_user_project(IN user_id int(5), IN project_id int(11), IN permission_type_id int(5))
-BEGIN
-      IF user_id<=0 OR ISNULL(user_id) THEN
-            INSERT INTO user_project (`project_id`, `permission_type_id`)
-            VALUES (`project_id`, `permission_type_id`);
-      END IF;
-END $$
-           
 
 DELIMITER ;

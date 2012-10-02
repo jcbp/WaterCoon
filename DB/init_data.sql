@@ -10,43 +10,47 @@ USE watercoon;
 --
 
 DELETE FROM `field`
-WHERE field_id < 1000;
+WHERE field_id < 10000;
 
 DELETE FROM `field_history`
-WHERE field_history_id < 1000;
+WHERE field_history_id < 10000;
 
 DELETE FROM `field_type`
-WHERE field_type_id < 1000;
+WHERE field_type_id < 10000;
 
 DELETE FROM `field_value`
-WHERE field_value_id < 1000;
+WHERE field_value_id < 10000;
 
 DELETE FROM `issue`
-WHERE issue_id < 1000;
+WHERE issue_id < 10000;
 
 DELETE FROM `permission_type`
-WHERE permission_type_id < 1000;
+WHERE permission_type_id < 10000;
 
-DELETE FROM `project`
-WHERE project_id < 1000;
+DELETE FROM `tag`
+WHERE tag_id < 10000;
 
-DELETE FROM `project_history`
-WHERE project_history_id < 1000;
+DELETE FROM `tag_user_list`
+WHERE tag_id < 10000;
+
+DELETE FROM `tag_history`
+WHERE tag_history_id < 10000;
 
 DELETE FROM `list`
-WHERE list_id < 1000;
+WHERE list_id < 10000;
+
+DELETE FROM `issue_list`
+WHERE issue_id < 10000;
 
 DELETE FROM `user_list`
-WHERE list_id < 1000;
+WHERE list_id < 10000;
 
 DELETE FROM `list_history`
-WHERE list_history_id < 1000;
+WHERE list_history_id < 10000;
 
 DELETE FROM `user`
-WHERE user_id < 1000;
+WHERE user_id < 10000;
 
-DELETE FROM `user_project`
-WHERE user_id < 1000;
 
 --
 -- Inserción de datos
@@ -94,14 +98,15 @@ ALTER TABLE `field_history` AUTO_INCREMENT = 1;
 ALTER TABLE `field_type` AUTO_INCREMENT = 1;
 ALTER TABLE `field_value` AUTO_INCREMENT = 1;
 ALTER TABLE `issue` AUTO_INCREMENT = 1;
+ALTER TABLE `issue_list` AUTO_INCREMENT = 1;
 ALTER TABLE `permission_type` AUTO_INCREMENT = 1;
-ALTER TABLE `project` AUTO_INCREMENT = 1;
-ALTER TABLE `project_history` AUTO_INCREMENT = 1;
+ALTER TABLE `tag` AUTO_INCREMENT = 1;
+ALTER TABLE `tag_user_list` AUTO_INCREMENT = 1;
+ALTER TABLE `tag_history` AUTO_INCREMENT = 1;
 ALTER TABLE `list` AUTO_INCREMENT = 1;
 ALTER TABLE `user_list` AUTO_INCREMENT = 1;
 ALTER TABLE `list_history` AUTO_INCREMENT = 1;
 ALTER TABLE `user` AUTO_INCREMENT = 1;
-ALTER TABLE `user_project` AUTO_INCREMENT = 1;
 
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

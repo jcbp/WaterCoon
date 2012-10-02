@@ -38,36 +38,18 @@ AUTO_INCREMENT = 8;
 
 
 -- -----------------------------------------------------
--- Table `project`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `project` ;
-
-CREATE  TABLE IF NOT EXISTS `project` (
-  `project_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `name` VARCHAR(64) CHARACTER SET 'latin1' NOT NULL ,
-  `project_timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
-  `description` VARCHAR(512) NULL ,
-  PRIMARY KEY (`project_id`) ,
-  UNIQUE INDEX `project_id_UNIQUE` (`project_id` ASC) )
-ENGINE = MyISAM
-AUTO_INCREMENT = 2;
-
-
--- -----------------------------------------------------
 -- Table `list`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `list` ;
 
 CREATE  TABLE IF NOT EXISTS `list` (
   `list_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `project_id` INT(11) UNSIGNED NOT NULL ,
   `name` VARCHAR(128) CHARACTER SET 'latin1' COLLATE 'latin1_spanish_ci' NOT NULL ,
-  `list_timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
   `description` VARCHAR(512) NULL ,
   `is_template` TINYINT(1) NULL ,
+  `list_timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
   PRIMARY KEY (`list_id`) ,
-  UNIQUE INDEX `sheet_id_UNIQUE` (`list_id` ASC) ,
-  INDEX `project_id_idx` (`project_id` ASC) )
+  UNIQUE INDEX `sheet_id_UNIQUE` (`list_id` ASC) )
 ENGINE = MyISAM
 AUTO_INCREMENT = 3;
 
@@ -123,11 +105,9 @@ DROP TABLE IF EXISTS `issue` ;
 
 CREATE  TABLE IF NOT EXISTS `issue` (
   `issue_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `list_id` INT(11) UNSIGNED NOT NULL ,
   `order_index` MEDIUMINT UNSIGNED NOT NULL ,
   PRIMARY KEY (`issue_id`) ,
-  UNIQUE INDEX `issue_id_UNIQUE` (`issue_id` ASC) ,
-  INDEX `list_id` (`list_id` ASC) )
+  UNIQUE INDEX `issue_id_UNIQUE` (`issue_id` ASC) )
 ENGINE = MyISAM;
 
 
@@ -154,6 +134,21 @@ AUTO_INCREMENT = 2;
 
 
 -- -----------------------------------------------------
+-- Table `tag`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `tag` ;
+
+CREATE  TABLE IF NOT EXISTS `tag` (
+  `tag_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `name` VARCHAR(64) CHARACTER SET 'latin1' NOT NULL ,
+  `tag_timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+  PRIMARY KEY (`tag_id`) ,
+  UNIQUE INDEX `tag_id_UNIQUE` (`tag_id` ASC) )
+ENGINE = MyISAM
+AUTO_INCREMENT = 2;
+
+
+-- -----------------------------------------------------
 -- Table `permission_type`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `permission_type` ;
@@ -163,21 +158,6 @@ CREATE  TABLE IF NOT EXISTS `permission_type` (
   `name` VARCHAR(32) NOT NULL ,
   PRIMARY KEY (`permission_type_id`) ,
   UNIQUE INDEX `user_type_id_UNIQUE` (`permission_type_id` ASC) )
-ENGINE = MyISAM;
-
-
--- -----------------------------------------------------
--- Table `user_project`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `user_project` ;
-
-CREATE  TABLE IF NOT EXISTS `user_project` (
-  `user_id` SMALLINT UNSIGNED NOT NULL ,
-  `project_id` INT(11) UNSIGNED NOT NULL ,
-  `permission_type_id` SMALLINT UNSIGNED NOT NULL COMMENT 'values:owner,admin,watch' ,
-  INDEX `user_id_idx` (`user_id` ASC) ,
-  INDEX `project_id_idx` (`project_id` ASC) ,
-  INDEX `permission_type_id_idx` (`permission_type_id` ASC) )
 ENGINE = MyISAM;
 
 
@@ -198,17 +178,16 @@ ENGINE = MyISAM;
 
 
 -- -----------------------------------------------------
--- Table `project_history`
+-- Table `tag_history`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `project_history` ;
+DROP TABLE IF EXISTS `tag_history` ;
 
-CREATE  TABLE IF NOT EXISTS `project_history` (
-  `project_history_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ,
+CREATE  TABLE IF NOT EXISTS `tag_history` (
+  `tag_history_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ,
   `username` VARCHAR(40) NOT NULL ,
   `operation` ENUM('DEL','INS','UPD') NOT NULL ,
-  `project_history_timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
-  PRIMARY KEY (`project_history_id`) ,
-  UNIQUE INDEX `sheet_history_id_UNIQUE` (`project_history_id` ASC) )
+  `tag_history_timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+  PRIMARY KEY (`tag_history_id`) )
 ENGINE = MyISAM;
 
 
@@ -224,6 +203,34 @@ CREATE  TABLE IF NOT EXISTS `user_list` (
   INDEX `fk_user_list_user` (`user_id` ASC) ,
   INDEX `fk_user_list_sheet` (`list_id` ASC) ,
   INDEX `fk_user_list_permission_type` (`permission_type_id` ASC) )
+ENGINE = MyISAM;
+
+
+-- -----------------------------------------------------
+-- Table `issue_list`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `issue_list` ;
+
+CREATE  TABLE IF NOT EXISTS `issue_list` (
+  `issue_id` INT(11) UNSIGNED NOT NULL ,
+  `list_id` INT(11) UNSIGNED NOT NULL ,
+  INDEX `fk_issue_list_issue_idx` (`issue_id` ASC) ,
+  INDEX `fk_issue_list_list_idx` (`list_id` ASC) )
+ENGINE = MyISAM;
+
+
+-- -----------------------------------------------------
+-- Table `tag_user_list`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `tag_user_list` ;
+
+CREATE  TABLE IF NOT EXISTS `tag_user_list` (
+  `tag_id` INT(11) UNSIGNED NOT NULL ,
+  `user_id` INT(11) UNSIGNED NOT NULL ,
+  `list_id` INT(11) UNSIGNED NOT NULL ,
+  INDEX `fk_tag_user_list_tag1_idx` (`tag_id` ASC) ,
+  INDEX `fk_tag_user_list_user1_idx` (`user_id` ASC) ,
+  INDEX `fk_tag_user_list_list1_idx` (`list_id` ASC) )
 ENGINE = MyISAM;
 
 
