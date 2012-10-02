@@ -84,6 +84,9 @@ class DataLayer {
 		for ($i = 0; $i < sizeof($this->xmlRoutine) && $info == null; $i++) {
 			$info = $this->getXmlObjRoutine($this->xmlRoutine[$i]);
 		}
+		if ($info == null) {
+			$this->responder->respond("Error: $this->routineName routine is undefined. Check de xml routine definition");
+		}
 		return $info;
 	}
 
