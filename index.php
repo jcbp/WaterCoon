@@ -34,10 +34,14 @@ if (!isset($_SESSION["wc_username"])) {
 	<link rel="stylesheet" type="text/css" href="text-markup/markitup/sets/textile/style.css"/>
 	<link rel="stylesheet" type="text/css" href="text-markup/text-markup.css"/>
 	<script src="text-markup/text-markup.js" type="text/javascript" charset="utf-8"></script>
-	<script type="text/javascript" language="javascript" src="text-markup/textile-converter.js"></script>
+	<script type="text/javascript" src="text-markup/textile-converter.js"></script>
 	<script type="text/javascript" src="text-markup/markitup/jquery.markitup.js"></script>
 	<script type="text/javascript" src="text-markup/markitup/sets/textile/set.js"></script>
 	
+
+	<!-- bootstrap -->
+	<script src="lib/bootstrap/bootstrap.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" href="lib/bootstrap/bootstrap.css" type="text/css" charset="utf-8">
 
 
 	<link rel="stylesheet" href="slickgrid/slick.grid.css" type="text/css"/>
@@ -84,13 +88,20 @@ if (!isset($_SESSION["wc_username"])) {
 
 	<style>
 
+	.popover-inner {
+		font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+		font-size: 14px;
+		line-height: 20px;
+		background-color: #fffcdf;
+	}
+
 	body {
 		background-color: #ffffff;
 		font-size: 16px;
 		font-family: arial;
 	}
 
-	div {
+	#data-grid div {
 		font-size: 14px !important;
 	}
 

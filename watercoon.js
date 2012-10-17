@@ -347,6 +347,28 @@ var WCGrid = function() {
 			settingColumns();
 			addTheIdColumn();
 			render();
+			initPopOver();
+		};
+
+		var initPopOver = function() {
+			var timeout;
+			$(".long-text-column").bind("mouseover", function(e) {
+				var elem = $(e.target);
+				elem.popover({
+					html: true,
+					placement: "bottom",
+					trigger: "manual",
+					title: "Titulo",
+					content: convert(e.target.innerHTML)
+				});
+				timeout = setTimeout(function() {
+					elem.popover("show");
+				}, 500);
+			});
+			$(".long-text-column").bind("mouseout", function(e) {
+				clearTimeout(timeout);
+				$(e.target).popover("destroy");
+			});
 		};
 
 		var render = function() {
@@ -406,6 +428,9 @@ var WCGrid = function() {
 			}
 			else {
 				column.cssClass = getColumnCSSClassName(column.field_id);
+			}
+			if (column.field_type == "longText") {
+				column.cssClass += " long-text-column";
 			}
 		};
 
